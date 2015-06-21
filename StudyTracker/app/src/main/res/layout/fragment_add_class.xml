@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#D3D3D3">
+
+    <TextView android:text="Please enter the class name:"
+        android:layout_height="wrap_content"
+        android:layout_width = "wrap_content"
+        android:textSize = "25sp"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/className"
+        android:layout_alignParentTop="true"
+        android:imeActionLabel="Enter"/>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:gravity="center|bottom"
+        android:orientation="vertical" >
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Done"
+            android:id="@+id/done"
+            android:background="#33ACCC"
+            android:onClick="doneButtonPressed" />
+
+    </LinearLayout>
+
+
+</LinearLayout>

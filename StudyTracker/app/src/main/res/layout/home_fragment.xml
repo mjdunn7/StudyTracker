@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#000000">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left"
+        android:orientation="horizontal"
+        android:background= "#D3D3D3"
+        android:weightSum="3">
+
+        <TextView
+            android:layout_width="50dip"
+            android:layout_height="fill_parent"
+            android:text=""
+            android:textSize="20sp"
+            android:layout_weight="1.5"
+            android:textColor="#008000"
+            android:id="@+id/subject_field"/>
+
+        <TextView
+            android:layout_width="50dip"
+            android:layout_height="fill_parent"
+            android:text=""
+            android:textSize="25sp"
+            android:id="@+id/timer"
+            android:textColor="#008000"
+            android:layout_weight=".75"/>
+
+        <ImageButton
+            android:layout_width="50dip"
+            android:layout_height="fill_parent"
+            android:src = "@drawable/stop"
+            android:id="@+id/stop_button"
+            android:layout_weight=".75"
+            android:onClick="stop_pressed"/>
+
+    </LinearLayout>
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:id="@+id/listview_classNames"
+        android:layout_weight="1"
+        android:background="#D3D3D3"/>
+
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="+ Add Class"
+        android:id="@+id/button"
+        android:layout_gravity="center|bottom"
+        android:background="#33ACCC"
+        android:onClick="addButtonClick"/>
+
+</LinearLayout>
