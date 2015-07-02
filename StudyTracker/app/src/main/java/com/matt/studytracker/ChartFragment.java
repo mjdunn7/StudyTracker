@@ -3,7 +3,6 @@ package com.matt.studytracker;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,29 +15,46 @@ import java.util.Vector;
 public class ChartFragment extends Fragment {
     protected int historyCount = 0;
     protected Vector<String> times = new Vector<String>();
+    protected Vector<String> uniqueSubjects = new Vector<String>();
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.chart_fragment, container, false);
     }
 
     public String calculateTotals() {
-        Cursor cursor = ((MainActivity) getActivity()).myDB.getAllHistoryRows();
+        Cursor historyCursor = ((MainActivity) getActivity()).myDB.getAllHistoryRows();
+        Cursor subjectCursor = ((MainActivity) getActivity()).myDB.getAllSubjectRows();
+
+        int subjectSize = subjectCursor.getCount();
+        int historySize = historyCursor.getCount();
+        String[][] uniqueSubjects;
+        uniqueSubjects = new String[subjectSize][historySize];
+
 
         String totals = "";
+        boolean vectorAccessed = false;
+        int subjectLocation = 0;
 
-        Log.d("sy", "test1");
-        if (cursor.moveToFirst()) {
+        if (subjectCursor.moveToFirst()) {
             do {
 
-                String time = cursor.getString(3);
+                String subject = subjectCursor.getString(1);
+                uniqueSubjects[subjectLocation][0] = subject;
+                ++subjectLocation;
 
-                times.add(time);
-                ++historyCount;
-            } while (cursor.moveToNext());
+            } while (subjectCursor.moveToNext());
 
-            cursor.close();
+            subjectCursor.close();
+        }
 
+        int[] sizes;
+        sizes = new int[subjectSize];
+        if (historyCursor.moveToFirst()) {
+            do {
 
+            } while (historyCursor.moveToNext());
+
+            historyCursor.close();
         }
         return totals;
     }
@@ -54,7 +70,7 @@ public class ChartFragment extends Fragment {
     }
 
 
-    public String calculatenPercentages() {
+    public String calculatePercentages() {
         String percentages = "";
         return percentages;
     }
