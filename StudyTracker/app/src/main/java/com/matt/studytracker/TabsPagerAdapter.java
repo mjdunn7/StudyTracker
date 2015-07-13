@@ -11,7 +11,7 @@ public class TabsPagerAdapter extends FragmentPagerAdapter {
 
     public HomeFragment Fragment1 = new HomeFragment();
     public ListFragment Fragment2 = new ListFragment();
-    public Fragment Fragment3 = new ChartFragment();
+    public ChartFragment Fragment3 = new ChartFragment();
 
     public TabsPagerAdapter(FragmentManager fm) {
         super(fm);
