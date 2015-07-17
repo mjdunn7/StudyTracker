@@ -34,8 +34,9 @@ public class ChartFragment extends Fragment {
 
         int subjectSize = subjectCursor.getCount();
         int historySize = historyCursor.getCount();
+        Log.d("historySize", Integer.toString(historyCursor.getCount()));
         String[][] uniqueSubjects;
-        uniqueSubjects = new String[subjectSize][historySize];
+        uniqueSubjects = new String[subjectSize][historySize + 1];
 
 
         int subjectLocation = 0;
@@ -58,13 +59,12 @@ public class ChartFragment extends Fragment {
         for(int i = 0; i < (subjectSize); ++i) {
             if (historyCursor.moveToFirst()) {
                 do {
-                    //Log.d("Time adder", Integer.toString(subjectSize));
-                   // Log.d("uniqueSubjects[i][0]", uniqueSubjects[i][0]);
-                   // Log.d("historyCursor.getString(1)", String.format(historyCursor.getString(1)));
                     if(historyCursor.getString(1).replaceAll("\\s+","").equals(uniqueSubjects[i][0].replaceAll("\\s+",""))){
                         uniqueSubjects[i][timeLocations] = historyCursor.getString(3);
                         ++timeLocations;
                         Log.d("timeLocations", Integer.toString(timeLocations));
+                        Log.d("US[i][timeLocations]", uniqueSubjects[i][timeLocations - 1]);
+                        Log.d("US[i][0]", uniqueSubjects[i][0]);
                     }
                 } while (historyCursor.moveToNext());
                 amountOfTimes[i] = timeLocations;
@@ -74,16 +74,16 @@ public class ChartFragment extends Fragment {
 
         //Calculates the amount of hours in numerical form from the array of strings for each respective subject.
         String totalTimes = "";
-        int minutes = 0;
+        double minutes = 0;
         for(int i = 0; i < subjectSize; ++i){
-            for(int j = 0; j < amountOfTimes[i]; ++j){
-                minutes = (Character.getNumericValue(uniqueSubjects[i][j].charAt(0)) * 60);
+            totalTimes += String.format(uniqueSubjects[i][0]);
+            for(int j = 1; j < amountOfTimes[i]; ++j){
+                minutes += (Character.getNumericValue(uniqueSubjects[i][j].charAt(0)) * 60);
                 minutes += (Character.getNumericValue(uniqueSubjects[i][j].charAt(2)) * 10);
                 minutes += (Character.getNumericValue(uniqueSubjects[i][j].charAt(3)));
-                totalTimes += String.format(uniqueSubjects[i][0]) + String.format("     ") + String.format(Integer.toString(minutes)) + String.format("     ");
-                minutes = 0;
-                Log.d("Second for loop", Integer.toString(amountOfTimes[i]));
             }
+            totalTimes += String.format("     ") + String.format(Double.toString(minutes)) + String.format("     ");
+            minutes = 0;
         }
 
         subjectCursor.close();

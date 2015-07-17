@@ -12,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.TableLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -29,6 +30,10 @@ public class HomeFragment extends Fragment
 
     protected TextView subject;
     protected TextView timer;
+    protected ImageButton stopButton;
+    protected TableLayout topView;
+
+
     protected boolean timerRunning;
     protected long startedAt;
     protected long stoppedAt;
@@ -63,11 +68,19 @@ public class HomeFragment extends Fragment
                         classList
                 );
 
+        //initializing UI elements
+        subject = (TextView) rootView.findViewById(R.id.subject_field);
+        timer = (TextView) rootView.findViewById(R.id.timer);
+        stopButton = (ImageButton) rootView.findViewById(R.id.stop_button);
+        topView = (TableLayout) rootView.findViewById(R.id.topLayout);
+
+        if(timerRunning){
+            topView.setVisibility(View.VISIBLE);
+        }
 
         //for when item in listView is tapped
         ListView listView = (ListView) rootView.findViewById(R.id.listview_classNames);
         listView.setAdapter(homeListAdaptor);
-
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
@@ -78,12 +91,16 @@ public class HomeFragment extends Fragment
                 updateTimer = new UpdateTimer();
                 handler.postDelayed(updateTimer, UPDATE_EVERY);
 
+                timer.setText("0:00:00");
+                topView.setVisibility(View.VISIBLE);
+
+
             }
         });
 
         //for when stop button is tapped
-        final ImageButton button = (ImageButton) rootView.findViewById(R.id.stop_button);
-        button.setOnClickListener(new View.OnClickListener() {
+
+        stopButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
                 if(timerRunning == true)
@@ -96,16 +113,12 @@ public class HomeFragment extends Fragment
                     stoppedSubject =  subject.getText().toString();
 
                     ((MainActivity)getActivity()).addToHistory(stoppedSubject, stoppedTime);
+                    topView.setVisibility(View.GONE);
                 }
 
                 timerRunning = false;
             }
         });
-
-
-
-        subject = (TextView) rootView.findViewById(R.id.subject_field);
-        timer = (TextView) rootView.findViewById(R.id.timer);
 
         //syncs with data base if not done so already
         if(!syncedWithDB){
@@ -171,8 +184,6 @@ public class HomeFragment extends Fragment
                 + String.format("%02d", minutes) + ":"
                 + String.format("%02d", seconds);
 
-        if(display == "0:00:00")
-            display = " ";
 
         timer.setText(display);
     }
@@ -232,8 +243,6 @@ public class HomeFragment extends Fragment
 
 
     class UpdateTimer implements Runnable {
-
-
         /**
          * Updates the counter display and vibrate if needed.
          * Is called at regular intervals.

@@ -7,8 +7,9 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-
+        android:gravity="top"
+        android:textColor="#000000"
+        android:textSize="20sp"
         android:id="@+id/analytics"
         android:background="#D3D3D3"/>
 

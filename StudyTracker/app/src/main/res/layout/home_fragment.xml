@@ -5,41 +5,58 @@
     android:orientation="vertical"
     android:background="#000000">
 
-    <LinearLayout
+    <TableLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="left"
         android:orientation="horizontal"
         android:background= "#D3D3D3"
-        android:weightSum="3">
+        android:weightSum="4"
+        android:id="@+id/topLayout"
+        android:visibility="gone">
 
-        <TextView
-            android:layout_width="50dip"
-            android:layout_height="fill_parent"
-            android:text=""
-            android:textSize="20sp"
-            android:layout_weight="1.5"
-            android:textColor="#008000"
-            android:id="@+id/subject_field"/>
+     <TableRow
+         android:gravity="center_vertical">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_height="wrap_content"
+            android:layout_weight="3">
 
-        <TextView
-            android:layout_width="50dip"
-            android:layout_height="fill_parent"
-            android:text=""
-            android:textSize="25sp"
-            android:id="@+id/timer"
-            android:textColor="#008000"
-            android:layout_weight=".75"/>
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="7:48:22"
+                android:textSize="32sp"
+                android:id="@+id/timer"
+                android:textColor="#008000"
+                android:layout_marginLeft="10dp"/>
 
-        <ImageButton
-            android:layout_width="50dip"
-            android:layout_height="fill_parent"
-            android:src = "@drawable/stop"
-            android:id="@+id/stop_button"
-            android:layout_weight=".75"
-            android:onClick="stop_pressed"/>
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Subject"
+                android:textSize="17sp"
+                android:textColor="#000000"
+                android:id="@+id/subject_field"
+                android:layout_marginLeft="10dp"/>
 
-    </LinearLayout>
+
+        </LinearLayout>
+
+
+            <ImageButton
+                android:layout_width="50dip"
+                android:layout_height="wrap_content"
+                android:src = "@drawable/stop"
+                android:id="@+id/stop_button"
+                android:layout_weight="1"
+                android:onClick="stop_pressed"
+                android:layout_marginLeft="10dp"
+                />
+
+     </TableRow>
+
+    </TableLayout>
 
     <ListView
         android:layout_width="match_parent"
