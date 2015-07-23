@@ -8,28 +8,90 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.Tab;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.View;
 
 import java.text.DateFormat;
 import java.util.Date;
 
 
-public class MainActivity extends ActionBarActivity implements ActionBar.TabListener {
+public class MainActivity extends ActionBarActivity implements ActionBar.TabListener, HomeFragment.StopClicked, SubjectLongTappedDialog.DialogListener, DeleteSubjectConfirmDialog.DeleteDialogListener {
     String stoppedSubject;
 
     public DBAdapter myDB;
-    //public DBAdapter myHistoryDB;
     private ViewPager viewPager;
     private TabsPagerAdapter mAdapter;
     private ActionBar actionbar;
 
+    String subjectToRemove;
+    protected int indexToRemove;
+
+    @Override
+    public void onDeleteConfirmed() {
+        HomeFragment homeFrag = (HomeFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getHomeTag());
+        if(homeFrag != null) {
+            Log.d("MainActivity", "homeFrag is not null");
+            homeFrag.removeSubject(indexToRemove);
+        }else{
+            Log.d("MainActivity", "homeFrag is null");
+            HomeFragment newFragment = new HomeFragment();
+
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.pager, newFragment, mAdapter.getHomeTag());
+            transaction.commit();
+            newFragment.removeSubject(indexToRemove);
+
+        }
+        myDB.deleteSubjectRow(subjectToRemove);
+
+    }
+
+    @Override
+    public void onPositiveClick() {
+        DeleteSubjectConfirmDialog dialogFragment = new DeleteSubjectConfirmDialog();
+        dialogFragment.show(getSupportFragmentManager(), String.format("delete subject"));
+    }
+
+    @Override
+    public void onNegativeClick() {
+
+    }
+
+    @Override
+    public void onNeutralClick() {
+
+    }
+
+    @Override
+    public void sendInfo(String subject, String timeElapsed) {
+        //mAdapter.Fragment2.addHistory(subject, timeElapsed);
+
+        ListFragment listFrag = (ListFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getListTag());
+        if(listFrag != null) {
+            Log.d("MainActivity", "listFrag is not null");
+            listFrag.addHistory(subject, timeElapsed);
+        }else{
+            Log.d("MainActivity", "listFrag is null");
+            ListFragment newFragment = new ListFragment();
+
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.pager, newFragment);
+            transaction.commit();
+            newFragment.addHistory(subject, timeElapsed);
+        }
+
+
+        //stoppedSubject = String.format(subject);
+        addHistoryToDataBase(subject, timeElapsed);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d("MainActivity", "onCreate");
 
         super.onCreate(savedInstanceState);
         openDataBase();
         setContentView(R.layout.activity_main);
-
 
         actionbar = getSupportActionBar();
         actionbar.setNavigationMode(actionbar.NAVIGATION_MODE_TABS);
@@ -70,42 +132,46 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
             public void onPageScrollStateChanged(int arg0) {
             }
         });
+
+        //HomeFragment homeFrag = (HomeFragment) getSupportFragmentManager().findFragmentByTag("home fragment");
+        /*if(homeFrag != null) {
+            Log.d("MainActivity", "homeFrag is not null");
+            //homeFrag.newClass(className);
+        }*/
     }
 
     public void openDataBase(){
         myDB = new DBAdapter(this);
         myDB.open();
-
-        //myHistoryDB = new DBAdapter(this);
-        //myHistoryDB.open();
-
     }
-    public void addButtonClick(View v)
-    {
+
+    public void addButtonClick(View v){
         Intent intent = new Intent(MainActivity.this, addClass.class);
         MainActivity.this.startActivityForResult(intent, 1);
     }
 
-    public void addToHistory(String subject, String timeElapsed)
-    {
-        mAdapter.Fragment2.addHistory(subject, timeElapsed);
-
-        stoppedSubject = String.format(subject);
-        addHistoryToDataBase(stoppedSubject, timeElapsed);
-    }
-
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == 1)
-        {
-            if (resultCode == Activity.RESULT_OK)
-            {
+        if(requestCode == 1){
+            if (resultCode == Activity.RESULT_OK){
                 String className = data.getExtras().getString("class_name");
                 if (className.trim().length() > 0) {
-                    mAdapter.Fragment1.newClass(className);
+                    HomeFragment homeFrag = (HomeFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getHomeTag());
+                    if(homeFrag != null) {
+                        Log.d("MainActivity", "homeFrag is not null");
+                        homeFrag.newClass(className);
+                    }else{
+                        Log.d("MainActivity", "homeFrag is null");
+                        HomeFragment newFragment = new HomeFragment();
+
+                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                        transaction.replace(R.id.pager, newFragment, mAdapter.getHomeTag());
+                        transaction.commit();
+                        newFragment.newClass(className);
+
+                    }
                     addSubjectToDataBase(className);
                 }
 
@@ -141,7 +207,17 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     protected void onDestroy(){
         super.onDestroy();
         myDB.close();
-        //myHistoryDB.close();
+        Log.d("Main activity", "onDestroy");
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
     }
 
 }

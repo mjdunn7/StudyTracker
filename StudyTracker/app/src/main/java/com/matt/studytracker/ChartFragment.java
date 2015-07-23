@@ -3,7 +3,6 @@ package com.matt.studytracker;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,7 +33,6 @@ public class ChartFragment extends Fragment {
 
         int subjectSize = subjectCursor.getCount();
         int historySize = historyCursor.getCount();
-        Log.d("historySize", Integer.toString(historyCursor.getCount()));
         String[][] uniqueSubjects;
         uniqueSubjects = new String[subjectSize][historySize + 1];
 
@@ -62,9 +60,6 @@ public class ChartFragment extends Fragment {
                     if(historyCursor.getString(1).replaceAll("\\s+","").equals(uniqueSubjects[i][0].replaceAll("\\s+",""))){
                         uniqueSubjects[i][timeLocations] = historyCursor.getString(3);
                         ++timeLocations;
-                        Log.d("timeLocations", Integer.toString(timeLocations));
-                        Log.d("US[i][timeLocations]", uniqueSubjects[i][timeLocations - 1]);
-                        Log.d("US[i][0]", uniqueSubjects[i][0]);
                     }
                 } while (historyCursor.moveToNext());
                 amountOfTimes[i] = timeLocations;
@@ -93,7 +88,6 @@ public class ChartFragment extends Fragment {
 
 
     }
-
 
     public String calculatePercentages() {
         String percentages = "";

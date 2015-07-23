@@ -3,13 +3,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#000000">
+    android:background="#000000"
+    android:id="@+id/list_fragment"
+>
 
     <ListView
     android:layout_width="match_parent"
     android:layout_height="0dip"
     android:id="@+id/history_list"
     android:layout_weight="1"
-    android:background="#D3D3D3"/>
+    android:background="#D3D3D3"
+        android:layout_marginRight="2dp"/>
 
     </LinearLayout>

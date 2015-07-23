@@ -19,23 +19,32 @@ import java.util.List;
  * Created by macbookpro on 4/24/15.
  */
 public class ListFragment extends Fragment {
+    static final String SUBJECT = "stopped subject";
+    static final String TIME = "stopped time";
+
     protected String stoppedSubject;
     protected String stoppedTime;
     protected String stoppedDate;
-    protected boolean addHistoryCalled;
+
+    protected boolean addHistoryCalled = false;
+
     protected HistoryListAdapter historyAdaptor;
     protected HistoryItem[] historyArray = {};
-    protected List<HistoryItem> historyList = new ArrayList<HistoryItem>(Arrays.asList(historyArray));
+    protected List<HistoryItem> historyList;
+    protected HistoryItem history = new HistoryItem();
+
 
     protected boolean syncedWithDB = false;
 
     protected View rootView;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+
+
         rootView = inflater.inflate(R.layout.list_fragment, container, false);
+        Log.d("ListFragment", "onCreateView");
 
-        //stoppedSubject = getArguments().getString("subject");
-
+        historyList = new ArrayList<HistoryItem>(Arrays.asList(historyArray));
         historyAdaptor =
                 new HistoryListAdapter(
                         getActivity(),
@@ -49,8 +58,6 @@ public class ListFragment extends Fragment {
 
         if(!syncedWithDB){
             Cursor cursor = ((MainActivity)getActivity()).myDB.getAllHistoryRows();
-
-            Log.d("sy", "test1");
             if(cursor.moveToFirst()){
                 do{
 
@@ -58,10 +65,6 @@ public class ListFragment extends Fragment {
                     String date = cursor.getString(2);
                     String time = cursor.getString(3);
 
-                    Log.d("sy","test");
-                    //Log.d("sy", isSubject);
-
-                    //subject = String.format(subject) + String.format("    ") + String.format(time) + String.format("    ") + String.format(date);
                     HistoryItem history = new HistoryItem();
                     history.setSubject(subject);
                     history.setDate(date);
@@ -79,8 +82,10 @@ public class ListFragment extends Fragment {
 
         }
 
-       // historyAdaptor.add(stoppedSubject);
-
+        if(addHistoryCalled){
+            historyAdaptor.add(history);
+            historyAdaptor.notifyDataSetChanged();
+        }
         return rootView;
 
 
@@ -90,20 +95,33 @@ public class ListFragment extends Fragment {
     {
         stoppedSubject = subject;
         stoppedTime = timeElapsed;
-        addHistoryCalled = true;
 
         stoppedDate = DateFormat.getDateInstance().format(new Date());
-
-        //stoppedSubject = String.format(stoppedSubject) + String.format("    ") + String.format(stoppedTime) + String.format("    ") + String.format(stoppedDate);
-        HistoryItem history = new HistoryItem();
 
         history.setSubject(subject);
         history.setTimeElapsed(timeElapsed);
         history.setDate(stoppedDate);
 
-        historyAdaptor.add(history);
-        addHistoryCalled = false;
+        if(historyAdaptor == null){
+            Log.d("ListFragment", "historyAdaptor is null");
+            addHistoryCalled = true;
+        }else{
+            historyAdaptor.add(history);
+            addHistoryCalled = false;
+        }
+
+
 
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
 }

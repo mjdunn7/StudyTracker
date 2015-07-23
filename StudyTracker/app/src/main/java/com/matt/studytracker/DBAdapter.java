@@ -91,9 +91,7 @@ public class DBAdapter {
 
     // Add a new set of values to the database.
     public long insertSubjectRow(String subject) {
-		/*
-		 * CHANGE 3:
-		 */
+
         // TODO: Update data in the row with new fields.
         // TODO: Also change the function's arguments to be what you need!
         // Create row's data:
@@ -106,9 +104,10 @@ public class DBAdapter {
     }
 
     // Delete a row from the database, by rowId (primary key)
-    public boolean deleteSubjectRow(long rowId) {
-        String where = KEY_ROWID + "=" + rowId;
-        return db.delete(SUBJECT_TABLE, where, null) != 0;
+    public boolean deleteSubjectRow(String subject) {
+        Log.d("DBAdapter", "deleteSubjectRowCalled");
+        String where = KEY_SUBJECT + "=?"; //+ rowId;
+        return db.delete(SUBJECT_TABLE, where, new String[] {String.valueOf(subject)}) > 0;
     }
 
     public void deleteAllSubjects() {
@@ -116,7 +115,7 @@ public class DBAdapter {
         long rowId = c.getColumnIndexOrThrow(KEY_ROWID);
         if (c.moveToFirst()) {
             do {
-                deleteSubjectRow(c.getLong((int) rowId));
+                deleteSubjectRow(c.getString((int) rowId));
             } while (c.moveToNext());
         }
         c.close();
@@ -189,7 +188,7 @@ public class DBAdapter {
         long rowId = c.getColumnIndexOrThrow(KEY_ROWID);
         if (c.moveToFirst()) {
             do {
-                deleteSubjectRow(c.getLong((int) rowId));
+                deleteHistoryRow(c.getLong((int) rowId));
             } while (c.moveToNext());
         }
         c.close();

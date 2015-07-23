@@ -1,5 +1,6 @@
 package com.matt.studytracker;
 
+import android.app.Activity;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
@@ -24,6 +25,12 @@ import java.util.List;
  */
 public class HomeFragment extends Fragment
 {
+
+
+    static final String TIMER_RUNNING = "timerRunning";
+    static final String START_TIME = "startTime";
+    static final String SUBJECT_STRING = "subjectString";
+
     public ArrayAdapter<String> homeListAdaptor;
     public String[] classArray = { };
     public List<String> classList = new ArrayList<String>(Arrays.asList(classArray));
@@ -32,7 +39,6 @@ public class HomeFragment extends Fragment
     protected TextView timer;
     protected ImageButton stopButton;
     protected TableLayout topView;
-
 
     protected boolean timerRunning;
     protected long startedAt;
@@ -49,17 +55,58 @@ public class HomeFragment extends Fragment
     protected Handler handler;
     protected UpdateTimer updateTimer;
 
-    public void newClass(String newClass)
-    {
-        homeListAdaptor.add(newClass);
+    protected String addedClass;
+    protected boolean newClassCalled = false;
+    protected boolean removeSubjectCalled = false;
+
+    protected int viewID;
+    String subjectToBeRemoved;
+
+    //protected DeleteSubject deleteSubject;
+
+    int getViewID(){
+        return viewID;
     }
 
+    public void newClass(String newClass)
+    {
+        addedClass = newClass;
+        if (homeListAdaptor == null) {
+            newClassCalled = true;
+        } else{
+            homeListAdaptor.add(newClass);
+            newClassCalled = false;
+        }
+    }
+
+    public void removeSubject(int index){
+        if (homeListAdaptor == null){
+            removeSubjectCalled = true;
+        } else{
+            homeListAdaptor.remove(subjectToBeRemoved);
+        }
+    }
+
+    StopClicked mCallback;
+
+    public interface StopClicked{
+         void sendInfo(String subject, String timeElapsed);
+    }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        final View rootView = inflater.inflate(R.layout.home_fragment, container, false);
 
-        //initializes adaptor
+        final View rootView = inflater.inflate(R.layout.home_fragment, container, false);
+        Log.d("HomeFragment", "OnCreate");
+
+        if(savedInstanceState != null){
+            timerRunning = savedInstanceState.getBoolean(TIMER_RUNNING);
+            subjectString = savedInstanceState.getString(SUBJECT_STRING);
+            startedAt = savedInstanceState.getLong(START_TIME);
+
+        }
+
+        //Initializes adaptor
         homeListAdaptor =
                 new SubjectListAdapter(
                         getActivity(),
@@ -68,7 +115,7 @@ public class HomeFragment extends Fragment
                         classList
                 );
 
-        //initializing UI elements
+        //Initialization of UI elements
         subject = (TextView) rootView.findViewById(R.id.subject_field);
         timer = (TextView) rootView.findViewById(R.id.timer);
         stopButton = (ImageButton) rootView.findViewById(R.id.stop_button);
@@ -84,35 +131,55 @@ public class HomeFragment extends Fragment
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                subject.setText(homeListAdaptor.getItem(position));
+                //Log.d("homeFragment", "list item tapped");
+                if(!timerRunning) {
+                    subjectString = homeListAdaptor.getItem(position);
+                    subject.setText(homeListAdaptor.getItem(position));
 
-                timerInitiated();
-                handler = new Handler();
-                updateTimer = new UpdateTimer();
-                handler.postDelayed(updateTimer, UPDATE_EVERY);
+                    timerInitiated();
+                    handler = new Handler();
+                    updateTimer = new UpdateTimer();
+                    handler.postDelayed(updateTimer, UPDATE_EVERY);
 
-                timer.setText("0:00:00");
-                topView.setVisibility(View.VISIBLE);
+                    timer.setText("0:00:00");
+                    topView.setVisibility(View.VISIBLE);
+                }
+            }
+        });
 
 
+        //for when a list item is long-clicked
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Log.d("HomeFragment", "deleteClicked");
+                subjectToBeRemoved = homeListAdaptor.getItem(i);
+                ((MainActivity) getActivity()).indexToRemove = i;
+                ((MainActivity) getActivity()).subjectToRemove = subjectToBeRemoved;
+
+                SubjectLongTappedDialog dialog = new SubjectLongTappedDialog();
+                dialog.show(getFragmentManager(), String.format("edit/delete subject"));
+
+                return true;
             }
         });
 
         //for when stop button is tapped
-
         stopButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                if(timerRunning == true)
-                {
+                if(timerRunning == true){
                     handler.removeCallbacks(updateTimer);
                     handler = null;
                     stoppedAt = System.currentTimeMillis();
 
                     stoppedTime = timer.getText().toString();
-                    stoppedSubject =  subject.getText().toString();
+                    stoppedSubject = subjectString;// subject.getText().toString();
 
-                    ((MainActivity)getActivity()).addToHistory(stoppedSubject, stoppedTime);
+                    Log.d("stoppedSubject", stoppedSubject);
+                    Log.d("stopperTime", stoppedTime);
+
+                    mCallback.sendInfo(stoppedSubject, stoppedTime);
                     topView.setVisibility(View.GONE);
                 }
 
@@ -120,43 +187,42 @@ public class HomeFragment extends Fragment
             }
         });
 
+
+
         //syncs with data base if not done so already
-        if(!syncedWithDB){
-            Cursor cursor = ((MainActivity)getActivity()).myDB.getAllSubjectRows();
-
-            Log.d("sy", "test1");
-            if(cursor.moveToFirst()){
-                do{
-
+        if(!syncedWithDB) {
+            Cursor cursor = ((MainActivity) getActivity()).myDB.getAllSubjectRows();
+            if (cursor.moveToFirst()) {
+                do {
                     String subject = cursor.getString(1);
-
-                    Log.d("sy","test");
-
                     homeListAdaptor.add(subject);
-
-                }while(cursor.moveToNext());
+                } while (cursor.moveToNext());
 
                 cursor.close();
 
             }
-
             syncedWithDB = true;
+        }
 
+        if(newClassCalled){
+            homeListAdaptor.add(addedClass);
+            newClassCalled = false;
+        }
+
+        if(removeSubjectCalled){
+            homeListAdaptor.remove(subjectToBeRemoved);
+            removeSubjectCalled = false;
         }
 
         return rootView;
-
     }
 
-    public void timerInitiated()
-    {
+    public void timerInitiated(){
         startedAt = System.currentTimeMillis();
         timerRunning = true;
-
     }
 
-    protected void setTimeDisplay ()
-    {
+    protected void setTimeDisplay(){
         String display;
         long timeNow;
         long diff;
@@ -184,17 +250,13 @@ public class HomeFragment extends Fragment
                 + String.format("%02d", minutes) + ":"
                 + String.format("%02d", seconds);
 
-
         timer.setText(display);
     }
 
     @Override
-    public void onStart()
-    {
+    public void onStart(){
         super.onStart();
-        Log.d("Home Fragment", "onStart");
-        if(timerRunning)
-        {
+        if(timerRunning){
             handler = new Handler();
             updateTimer = new UpdateTimer();
             handler.postDelayed(updateTimer, UPDATE_EVERY);
@@ -202,30 +264,10 @@ public class HomeFragment extends Fragment
     }
 
     @Override
-    public void onPause()
-    {
-        super.onPause();
-        subjectString = subject.getText().toString();
-        Log.d("Home Fragment", "onPause");
-    }
-
-    @Override
-    public void onResume()
-    {
-        super.onResume();
-        setTimeDisplay();
-        subject.setText(subjectString);
-
-        Log.d("home fragment", "onResume");
-    }
-
-    @Override
-    public void onStop()
-    {
+    public void onStop(){
         super.onStop();
         subjectString = subject.getText().toString();
-        if(timerRunning)
-        {
+        if(timerRunning){
             handler.removeCallbacks(updateTimer);
             updateTimer = null;
             handler = null;
@@ -235,12 +277,43 @@ public class HomeFragment extends Fragment
     }
 
     @Override
-    public void onDestroy()
-    {
-        super.onDestroy();
-        Log.d("home fragment", "onDestroy");
+    public void onPause(){
+        subjectString = subject.getText().toString();
+        super.onPause();
     }
 
+    @Override
+    public void onResume(){
+        super.onResume();
+        setTimeDisplay();
+        subject.setText(subjectString);
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        //Log.d("home fragment", "onDestroy");
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState){
+        Log.d("HomeFragment", "onSaveInstanceState");
+        savedInstanceState.putBoolean(TIMER_RUNNING, timerRunning);
+        savedInstanceState.putLong(START_TIME, startedAt);
+        savedInstanceState.putString(SUBJECT_STRING, subjectString);
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        try{
+            mCallback = (StopClicked) activity;
+        }catch (ClassCastException e){
+            throw new ClassCastException(activity.toString() + "must implement StopClicked");
+        }
+    }
 
     class UpdateTimer implements Runnable {
         /**
@@ -248,7 +321,6 @@ public class HomeFragment extends Fragment
          * Is called at regular intervals.
          */
         public void run() {
-            // Log.d(CLASS_NAME, "run")
 
             setTimeDisplay();
 

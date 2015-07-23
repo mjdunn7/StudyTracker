@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#000000">
+    android:background="#000000"
+    android:id="@+id/home_fragment"
+    android:tag="home fragment">
 
     <TableLayout
         android:layout_width="match_parent"
@@ -13,7 +16,8 @@
         android:background= "#D3D3D3"
         android:weightSum="4"
         android:id="@+id/topLayout"
-        android:visibility="gone">
+        android:visibility="gone"
+        android:layout_marginRight="2dp">
 
      <TableRow
          android:gravity="center_vertical">
@@ -63,16 +67,18 @@
         android:layout_height="0dip"
         android:id="@+id/listview_classNames"
         android:layout_weight="1"
-        android:background="#D3D3D3"/>
+        android:background="#D3D3D3"
+        android:layout_marginRight="2dp"/>
 
 
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="+ Add Class"
+        android:text="+ Add Subject"
         android:id="@+id/button"
         android:layout_gravity="center|bottom"
         android:background="#33ACCC"
-        android:onClick="addButtonClick"/>
+        android:onClick="addButtonClick"
+        android:layout_marginRight="2dp"/>
 
 </LinearLayout>
