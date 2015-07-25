@@ -1,8 +1,12 @@
 package com.matt.studytracker;
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
@@ -22,6 +26,10 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     private ViewPager viewPager;
     private TabsPagerAdapter mAdapter;
     private ActionBar actionbar;
+    private TimerService timerService;
+    private boolean boundToTimer = false;
+
+    private ServiceConnection mConnection;
 
     String subjectToRemove;
     protected int indexToRemove;
@@ -132,12 +140,6 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
             public void onPageScrollStateChanged(int arg0) {
             }
         });
-
-        //HomeFragment homeFrag = (HomeFragment) getSupportFragmentManager().findFragmentByTag("home fragment");
-        /*if(homeFrag != null) {
-            Log.d("MainActivity", "homeFrag is not null");
-            //homeFrag.newClass(className);
-        }*/
     }
 
     public void openDataBase(){
@@ -148,6 +150,16 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     public void addButtonClick(View v){
         Intent intent = new Intent(MainActivity.this, addClass.class);
         MainActivity.this.startActivityForResult(intent, 1);
+    }
+
+    public void startTimerService(String subject){
+        timerService.startTimer(subject);
+
+    }
+
+
+    public void stopTimerService(){
+        timerService.stop();
     }
 
 
@@ -213,12 +225,35 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     @Override
     public void onStart(){
         super.onStart();
+        Intent intent = new Intent(this, TimerService.class);
+        startService(intent);
+
+        mConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                Log.d("MainActivity", "onServiceConnected");
+                TimerService.LocalBinder binder = (TimerService.LocalBinder) iBinder;
+                timerService = binder.getService();
+                boundToTimer = true;
+
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName componentName) {
+                boundToTimer = false;
+                Log.d("MainActivity", "onServiceDisconnected");
+            }
+        };
+
+        Intent intent2 = new Intent(this, TimerService.class);
+        bindService(intent2, mConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     public void onStop(){
         super.onStop();
+        Intent intent = new Intent(this, TimerService.class);
+        unbindService(mConnection);
     }
-
 }
 

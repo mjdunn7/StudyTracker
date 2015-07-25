@@ -25,8 +25,6 @@ import java.util.List;
  */
 public class HomeFragment extends Fragment
 {
-
-
     static final String TIMER_RUNNING = "timerRunning";
     static final String START_TIME = "startTime";
     static final String SUBJECT_STRING = "subjectString";
@@ -61,12 +59,6 @@ public class HomeFragment extends Fragment
 
     protected int viewID;
     String subjectToBeRemoved;
-
-    //protected DeleteSubject deleteSubject;
-
-    int getViewID(){
-        return viewID;
-    }
 
     public void newClass(String newClass)
     {
@@ -141,6 +133,8 @@ public class HomeFragment extends Fragment
                     updateTimer = new UpdateTimer();
                     handler.postDelayed(updateTimer, UPDATE_EVERY);
 
+                    ((MainActivity) getActivity()).startTimerService(subjectString);
+
                     timer.setText("0:00:00");
                     topView.setVisibility(View.VISIBLE);
                 }
@@ -181,6 +175,9 @@ public class HomeFragment extends Fragment
 
                     mCallback.sendInfo(stoppedSubject, stoppedTime);
                     topView.setVisibility(View.GONE);
+
+                    ((MainActivity) getActivity()).stopTimerService();
+                    //((MainActivity) getActivity()).
                 }
 
                 timerRunning = false;

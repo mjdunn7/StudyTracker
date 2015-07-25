@@ -79,6 +79,6 @@
         android:layout_gravity="center|bottom"
         android:background="#33ACCC"
         android:onClick="addButtonClick"
-        android:layout_marginRight="2dp"/>
+        android:layout_marginRight="1dp"/>
 
 </LinearLayout>
