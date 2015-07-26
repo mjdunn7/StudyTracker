@@ -8,11 +8,21 @@
 >
 
     <ListView
-    android:layout_width="match_parent"
-    android:layout_height="0dip"
-    android:id="@+id/history_list"
-    android:layout_weight="1"
-    android:background="#D3D3D3"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:id="@+id/history_list"
+        android:layout_weight="1"
+        android:background="#D3D3D3"
         android:layout_marginRight="2dp"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="+ Add Session"
+        android:id="@+id/add_session"
+        android:layout_gravity="center|bottom"
+        android:background="#33ACCC"
+        android:onClick="addSessionButton"
+        android:layout_marginRight="1dp"/>
 
     </LinearLayout>

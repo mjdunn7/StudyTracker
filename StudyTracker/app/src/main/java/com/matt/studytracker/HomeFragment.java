@@ -68,7 +68,9 @@ public class HomeFragment extends Fragment
         } else{
             homeListAdaptor.add(newClass);
             newClassCalled = false;
+            setSubjectArray();
         }
+
     }
 
     public void removeSubject(int index){
@@ -76,7 +78,12 @@ public class HomeFragment extends Fragment
             removeSubjectCalled = true;
         } else{
             homeListAdaptor.remove(subjectToBeRemoved);
+            setSubjectArray();
         }
+    }
+
+    public void setSubjectArray(){
+        ((MainActivity) getActivity()).setSubjectArray(classList.toArray(new String[classList.size()]));
     }
 
     StopClicked mCallback;
@@ -96,6 +103,13 @@ public class HomeFragment extends Fragment
             subjectString = savedInstanceState.getString(SUBJECT_STRING);
             startedAt = savedInstanceState.getLong(START_TIME);
 
+        }
+
+        //Checks timer service, syncs if necessary
+        if(((MainActivity)getActivity()).getTimerService() != null && ((MainActivity)getActivity()).serviceTiming() && savedInstanceState == null)  {
+            timerRunning = true;
+            subjectString = ((MainActivity)getActivity()).serviceSubject();
+            startedAt = ((MainActivity)getActivity()).serviceTimeStarted();
         }
 
         //Initializes adaptor
@@ -210,6 +224,8 @@ public class HomeFragment extends Fragment
             homeListAdaptor.remove(subjectToBeRemoved);
             removeSubjectCalled = false;
         }
+
+        setSubjectArray();
 
         return rootView;
     }

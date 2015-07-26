@@ -20,6 +20,7 @@ public class TimerService extends Service {
     protected long startedAt;
     protected long stoppedAt;
     protected Notification note;
+    protected String timedSubject;
 
     private final IBinder mBinder = new LocalBinder();
     private static final int NOTIFICATION_ID = 1;
@@ -79,6 +80,7 @@ public class TimerService extends Service {
 
     public void startTimer(String subject){
 
+        timedSubject = subject;
         startForeground(NOTIFICATION_ID, getTimerNotification(subject, ""));
 
         timerInitiated();

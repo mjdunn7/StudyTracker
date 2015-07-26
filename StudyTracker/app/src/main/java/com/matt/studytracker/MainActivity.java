@@ -20,7 +20,7 @@ import java.util.Date;
 
 
 public class MainActivity extends ActionBarActivity implements ActionBar.TabListener, HomeFragment.StopClicked, SubjectLongTappedDialog.DialogListener, DeleteSubjectConfirmDialog.DeleteDialogListener {
-    String stoppedSubject;
+    public static final String SUBJECT_ARRAY = "main activity subject array";
 
     public DBAdapter myDB;
     private ViewPager viewPager;
@@ -29,10 +29,23 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     private TimerService timerService;
     private boolean boundToTimer = false;
 
+    private String[] subjectArray = {};
+
     private ServiceConnection mConnection;
 
     String subjectToRemove;
     protected int indexToRemove;
+
+    public TimerService getTimerService(){
+        return timerService;
+    }
+    public void setSubjectArray(String[] array){
+        subjectArray = array;
+    }
+
+    public String[] getSubjectArray(){
+        return subjectArray;
+    }
 
     @Override
     public void onDeleteConfirmed() {
@@ -95,6 +108,10 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if(savedInstanceState != null){
+            subjectArray = savedInstanceState.getStringArray(SUBJECT_ARRAY);
+        }
+
         Log.d("MainActivity", "onCreate");
 
         super.onCreate(savedInstanceState);
@@ -155,6 +172,18 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     public void startTimerService(String subject){
         timerService.startTimer(subject);
 
+    }
+
+    public boolean serviceTiming(){
+        return timerService.timerRunning;
+    }
+
+    public String serviceSubject(){
+        return timerService.timedSubject;
+    }
+
+    public long serviceTimeStarted(){
+        return timerService.startedAt;
     }
 
 
@@ -254,6 +283,12 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         super.onStop();
         Intent intent = new Intent(this, TimerService.class);
         unbindService(mConnection);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState){
+        savedInstanceState.putStringArray(SUBJECT_ARRAY, subjectArray);
+        super.onSaveInstanceState(savedInstanceState);
     }
 }
 
