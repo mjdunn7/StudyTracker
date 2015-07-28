@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ListView;
 
 import java.text.DateFormat;
@@ -88,20 +87,6 @@ public class ListFragment extends Fragment {
             historyAdaptor.notifyDataSetChanged();
         }
 
-        Button button= (Button) rootView.findViewById(R.id.add_session);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //HistoryDatePickerDialog dialog = new HistoryDatePickerDialog();
-                //dialog.show(getFragmentManager(), String.format("pick date"));
-                SubjectChooserDialog dialog = new SubjectChooserDialog();
-                Bundle args = new Bundle();
-                args.putStringArray(SubjectChooserDialog.SUBJECT_ARRAY, ((MainActivity)getActivity()).getSubjectArray());
-                dialog.setArguments(args);
-                dialog.show(getFragmentManager(), "subject chooser");
-            }
-        });
-
         return rootView;
 
 
@@ -125,9 +110,6 @@ public class ListFragment extends Fragment {
             historyAdaptor.add(history);
             addHistoryCalled = false;
         }
-
-
-
     }
 
     @Override

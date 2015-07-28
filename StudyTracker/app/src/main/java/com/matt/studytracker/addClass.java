@@ -12,18 +12,19 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 
 
-public class addClass extends ActionBarActivity {
+public class AddClass extends ActionBarActivity {
+    public static final int ACTIVITY_ID = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_class);
-        if (savedInstanceState == null) {
+//        if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, new PlaceholderFragment())
                     .commit();
-        }
+//        }
 
         ActionBar actionbar = getSupportActionBar();
 
@@ -37,7 +38,7 @@ public class addClass extends ActionBarActivity {
         EditText text = (EditText)findViewById(R.id.className);
         String className = text.getText().toString();
 
-        Intent intent = new Intent(addClass.this, MainActivity.class).putExtra("class_name", className);
+        Intent intent = new Intent(AddClass.this, MainActivity.class).putExtra("class_name", className);
         setResult(Activity.RESULT_OK, intent);
         finish();
     }
@@ -51,8 +52,7 @@ public class addClass extends ActionBarActivity {
         }
 
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_add_class, container, false);
             return rootView;
         }

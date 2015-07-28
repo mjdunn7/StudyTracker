@@ -16,6 +16,8 @@ import android.support.v4.app.DialogFragment;
  */
 public class SubjectLongTappedDialog extends DialogFragment {
     DialogListener mListener;
+    public static final String SUBJECT_SELECTED = "long tapped subject selected";
+    private String title;
 
     public interface DialogListener{
         public void onPositiveClick();
@@ -24,9 +26,20 @@ public class SubjectLongTappedDialog extends DialogFragment {
     }
 
     @Override
+    public void setArguments(Bundle args) {
+        super.setArguments(args);
+        title = args.getString(SUBJECT_SELECTED);
+
+    }
+
+    @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        if(savedInstanceState != null){
+            title = savedInstanceState.getString(SUBJECT_SELECTED);
+        }
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage("What would you like to do with this subject?");
+        builder.setMessage("Select Action:");
         builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
@@ -45,6 +58,7 @@ public class SubjectLongTappedDialog extends DialogFragment {
                 mListener.onNeutralClick();
             }
         });
+        builder.setTitle(title);
 
         return builder.create();
     }
@@ -58,5 +72,12 @@ public class SubjectLongTappedDialog extends DialogFragment {
         }catch (ClassCastException e){
             throw new ClassCastException(activity.toString() + " must implement dialog listener");
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putString(SUBJECT_SELECTED, title);
+
+        super.onSaveInstanceState(outState);
     }
 }

@@ -1,21 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+    android:layout_height="wrap_content"
+    android:layout_width="fill_parent"
+    android:orientation="vertical">
+    <ScrollView
+        android:layout_height="0dp"
+        android:layout_width="fill_parent"
+        android:fadeScrollbars="false"
+        android:layout_weight="1"
+        android:background= "#D3D3D3">
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical"
+            android:scrollbarAlwaysDrawVerticalTrack="true">
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Select corresponding subject:"
+                android:layout_marginTop="3dp"
+                android:layout_marginBottom="3dp"
+                android:layout_marginLeft="8dp"
+                android:textSize="20sp"
+                android:textColor="#292929"/>
+
+            <Spinner
+                android:id="@+id/subjects_spinner"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content" />
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Select corresponding date:"
+                android:layout_marginLeft="8dp"
+                android:textColor="#292929"
+                android:textSize="20sp"/>
+
+            <DatePicker
+                 android:id="@+id/date_picker"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_marginLeft = "10dp"
+                 android:layout_marginRight="10dp"
+                 android:descendantFocusability="blocksDescendants"/>
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
+
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Enter elapsed time:"
+                android:layout_marginLeft="8dp"
+                android:textSize="20sp"
+                android:textColor="#292929"/>
+
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TableRow
+                    android:layout_gravity="center_horizontal">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="fill_parent"
+                        android:text="Hours:"
+                        android:textColor="#000000"
+                        android:textSize="23sp"
+                        android:layout_weight="1"
+                        android:layout_marginLeft="70dp"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="fill_parent"
+                        android:text="Minutes:"
+                        android:textColor="#000000"
+                        android:textSize="23sp"
+                        android:layout_weight="1"
+                        android:layout_gravity="left" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_gravity="center_horizontal">
+
+                    <NumberPicker
+                        android:layout_width="60dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/hours_picker"
+                        android:layout_marginRight="10dp"
+                        android:layout_marginLeft="70dp"
+                        android:layout_weight="1"
+                        android:descendantFocusability="blocksDescendants"/>
+                    <NumberPicker
+                        android:layout_width="60dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/minutes_picker"
+                        android:layout_weight="1"
+                        android:layout_marginRight="70dp"
+                        android:descendantFocusability="blocksDescendants" />
+                </TableRow>
+            </TableLayout>
+
+
+        </LinearLayout>
+    </ScrollView>
+
+    <Button
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_gravity="center">
-
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="Select corresponding subject:"
-        android:layout_margin="5dp"
-        android:textSize="20sp"/>
-
-    <Spinner
-        android:id="@+id/subjects_spinner"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"/>
+    android:layout_height="wrap_content"
+    android:text="Done"
+    android:id="@+id/button"
+    android:layout_gravity="center|bottom"
+    android:background="#33ACCC"
+    android:onClick="donePressed" />
 
 </LinearLayout>

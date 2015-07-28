@@ -19,12 +19,21 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".addClass"
+            android:name=".AddClass"
             android:label="@string/title_activity_add_class"
             android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="MainActivity" />
+        </activity>
+        <activity
+            android:name=".NewSessionActivity"
+            android:label=".NewSessionActivity"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="MainActivity" />
+
         </activity>
 
         <service

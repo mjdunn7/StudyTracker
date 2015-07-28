@@ -165,8 +165,14 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     }
 
     public void addButtonClick(View v){
-        Intent intent = new Intent(MainActivity.this, addClass.class);
-        MainActivity.this.startActivityForResult(intent, 1);
+        Intent intent = new Intent(MainActivity.this, AddClass.class);
+        MainActivity.this.startActivityForResult(intent, AddClass.ACTIVITY_ID);
+    }
+
+    public void addSessionButton(View v){
+        Intent intent = new Intent(MainActivity.this, NewSessionActivity.class);
+        intent.putExtra(SUBJECT_ARRAY, subjectArray);
+        MainActivity.this.startActivityForResult(intent, NewSessionActivity.ACTIVITY_ID);
     }
 
     public void startTimerService(String subject){
@@ -195,28 +201,48 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == 1){
-            if (resultCode == Activity.RESULT_OK){
-                String className = data.getExtras().getString("class_name");
-                if (className.trim().length() > 0) {
-                    HomeFragment homeFrag = (HomeFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getHomeTag());
-                    if(homeFrag != null) {
-                        Log.d("MainActivity", "homeFrag is not null");
-                        homeFrag.newClass(className);
-                    }else{
-                        Log.d("MainActivity", "homeFrag is null");
-                        HomeFragment newFragment = new HomeFragment();
+        if(requestCode == AddClass.ACTIVITY_ID && resultCode == Activity.RESULT_OK) {
+            String className = data.getExtras().getString("class_name");
+            if (className.trim().length() > 0) {
+                HomeFragment homeFrag = (HomeFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getHomeTag());
+                if (homeFrag != null) {
+                    Log.d("MainActivity", "homeFrag is not null");
+                    homeFrag.newClass(className);
+                } else {
+                    Log.d("MainActivity", "homeFrag is null");
+                    HomeFragment newFragment = new HomeFragment();
 
-                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                        transaction.replace(R.id.pager, newFragment, mAdapter.getHomeTag());
-                        transaction.commit();
-                        newFragment.newClass(className);
-
-                    }
-                    addSubjectToDataBase(className);
+                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                    transaction.replace(R.id.pager, newFragment, mAdapter.getHomeTag());
+                    transaction.commit();
+                    newFragment.newClass(className);
                 }
-
+                addSubjectToDataBase(className);
             }
+        }
+
+        if(requestCode == NewSessionActivity.ACTIVITY_ID && resultCode == Activity.RESULT_OK){
+            String date;
+            date = NewSessionActivity.MONTHS[data.getExtras().getInt(NewSessionActivity.MONTH)];
+            date += " " + Integer.toString(data.getExtras().getInt(NewSessionActivity.DAY)) + ",";
+            date += " " + Integer.toString(data.getExtras().getInt(NewSessionActivity.YEAR));
+
+            String subject = data.getExtras().getString(NewSessionActivity.SUBJECT);
+            String hours = Integer.toString(data.getExtras().getInt(NewSessionActivity.HOURS));
+
+            int intMinutes = data.getExtras().getInt(NewSessionActivity.MINUTES);
+            String minutes;
+            if(intMinutes > 9) {
+                minutes = Integer.toString(data.getExtras().getInt(NewSessionActivity.MINUTES));
+            }else {
+                minutes = "0" + Integer.toString(data.getExtras().getInt(NewSessionActivity.MINUTES));
+            }
+
+            String time = hours + ":" + minutes + ":00";
+
+            addHistoryToDataBase(subject, time, date);
+
+
         }
     }
 
@@ -224,9 +250,13 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         myDB.insertSubjectRow(subject);
     }
 
-    public void addHistoryToDataBase(String history, String time){
+    public void addHistoryToDataBase(String subject, String time){
         String date  = DateFormat.getDateInstance().format(new Date());
-        myDB.insertHistoryRow(history, time, date);
+        myDB.insertHistoryRow(subject, time, date);
+    }
+
+    public void addHistoryToDataBase(String subject, String time, String date){
+        myDB.insertHistoryRow(subject, time, date);
     }
 
     @Override

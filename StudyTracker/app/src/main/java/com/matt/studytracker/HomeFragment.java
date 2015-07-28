@@ -166,6 +166,11 @@ public class HomeFragment extends Fragment
                 ((MainActivity) getActivity()).subjectToRemove = subjectToBeRemoved;
 
                 SubjectLongTappedDialog dialog = new SubjectLongTappedDialog();
+
+                Bundle args = new Bundle();
+                args.putString(SubjectLongTappedDialog.SUBJECT_SELECTED, subjectToBeRemoved);
+                dialog.setArguments(args);
+
                 dialog.show(getFragmentManager(), String.format("edit/delete subject"));
 
                 return true;
