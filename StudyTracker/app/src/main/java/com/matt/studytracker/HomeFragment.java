@@ -89,7 +89,7 @@ public class HomeFragment extends Fragment
     StopClicked mCallback;
 
     public interface StopClicked{
-         void sendInfo(String subject, String timeElapsed);
+         void addToHistory(String subject, String timeElapsed);
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -192,7 +192,7 @@ public class HomeFragment extends Fragment
                     Log.d("stoppedSubject", stoppedSubject);
                     Log.d("stopperTime", stoppedTime);
 
-                    mCallback.sendInfo(stoppedSubject, stoppedTime);
+                    mCallback.addToHistory(stoppedSubject, stoppedTime);
                     topView.setVisibility(View.GONE);
 
                     ((MainActivity) getActivity()).stopTimerService();

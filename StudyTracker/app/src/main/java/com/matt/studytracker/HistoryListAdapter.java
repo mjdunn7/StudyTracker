@@ -14,6 +14,7 @@ import java.util.List;
  */
 public class HistoryListAdapter extends ArrayAdapter<HistoryItem> {
     List<HistoryItem> history;
+    public static final String TAG = "HistoryListAdapter";
 
     public HistoryListAdapter(Context context, int resource, int textViewResourceId, HistoryItem[] objects) {
         super(context, resource, textViewResourceId, objects);
@@ -31,22 +32,34 @@ public class HistoryListAdapter extends ArrayAdapter<HistoryItem> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent){
-        View v = convertView;
+        //Log.d(TAG, "get view called with position " + Integer.toString(position));
 
-        if (v == null) {
+        if (convertView == null) {
             LayoutInflater vi;
             vi = LayoutInflater.from(getContext());
-            v = vi.inflate(R.layout.history_list_item_layout, null);
+            convertView = vi.inflate(R.layout.history_list_item_layout, null);
+
+            TextView subject = (TextView) convertView.findViewById(R.id.history_list_textview);
+            TextView date = (TextView) convertView.findViewById(R.id.history_list_date);
+            TextView timeElapsed = (TextView) convertView.findViewById(R.id.history_list_time);
+
+            subject.setText(history.get(position).getSubject());
+            date.setText(history.get(position).getDate());
+            timeElapsed.setText(history.get(position).getTimeElapsed());
+
+            return convertView;
+        } else {
+            TextView subject = (TextView) convertView.findViewById(R.id.history_list_textview);
+            TextView date = (TextView) convertView.findViewById(R.id.history_list_date);
+            TextView timeElapsed = (TextView) convertView.findViewById(R.id.history_list_time);
+
+            subject.setText(history.get(position).getSubject());
+            date.setText(history.get(position).getDate());
+            timeElapsed.setText(history.get(position).getTimeElapsed());
+
+            return convertView;
         }
 
-        TextView subject = (TextView) v.findViewById(R.id.history_list_textview);
-        TextView date = (TextView) v.findViewById(R.id.history_list_date);
-        TextView timeElapsed = (TextView) v.findViewById(R.id.history_list_time);
 
-        subject.setText(history.get(position).getSubject());
-        date.setText(history.get(position).getDate());
-        timeElapsed.setText(history.get(position).getTimeElapsed());
-
-        return v;
     }
 }

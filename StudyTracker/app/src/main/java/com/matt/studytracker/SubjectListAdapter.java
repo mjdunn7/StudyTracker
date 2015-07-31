@@ -22,7 +22,7 @@ public class SubjectListAdapter extends ArrayAdapter <String> {
 
     public SubjectListAdapter(Context context, int resource, int resource2, List<String> items) {
         super(context, resource, resource2, items);
-        subjects = items;
+       subjects = items;
     }
 
     @Override

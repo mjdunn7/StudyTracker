@@ -23,25 +23,31 @@ public class DBAdapter {
     public static final String KEY_ROWID = "_id";
     public static final int COL_ROWID = 0;
 
+    public static final int H_SUBJECT_COLUMN = 1;
+    public static final int H_DATE_COLUMN = 2;
+    public static final int H_HUMAN_DATE_COLUMN = 3;
+    public static final int H_TIME_ELAPSED_COLUMN = 4;
+
 
     //subject columns
     public static final String KEY_SUBJECT = "subject";
 
     //history columns
     public static final String HISTORY_SUBJECT = "historySubject";
-    public static final String HISTORY_DATE = "date";
-    public static final String HISTORY_TIME = "time";
+    public static final String HISTORY_DATE = "formatted_date";
+    public static final String HISTORY_HUMAN_DATE = "human_readable_date";
+    public static final String HISTORY_TIME_ELAPSED = "time";
 
 
     public static final String[] ALL_SUBJECT_KEYS = new String[] {KEY_ROWID, KEY_SUBJECT};
-    public static final String[] ALL_HISTORY_KEYS = new String[] {KEY_ROWID, HISTORY_SUBJECT, HISTORY_DATE, HISTORY_TIME};
+    public static final String[] ALL_HISTORY_KEYS = new String[] {KEY_ROWID, HISTORY_SUBJECT, HISTORY_DATE, HISTORY_HUMAN_DATE, HISTORY_TIME_ELAPSED};
 
     // DB info: it's name, and the table we are using (just one).
     public static final String DATABASE_NAME = "MyDb";
     public static final String SUBJECT_TABLE = "subjectTable";
     public static final String HISTORY_TABLE = "historyTable";
     // Track DB version if a new version of your app changes the format.
-    public static final int DATABASE_VERSION = 3;
+    public static final int DATABASE_VERSION = 4;
 
     private static final String CREATE_SUBJECT_TABLE =
             "create table " + SUBJECT_TABLE
@@ -58,7 +64,8 @@ public class DBAdapter {
 
                     + HISTORY_SUBJECT + " text not null,"
                     + HISTORY_DATE + " text not null,"
-                    + HISTORY_TIME + " text not null"
+                    + HISTORY_HUMAN_DATE + " text not null,"
+                    + HISTORY_TIME_ELAPSED + " text not null"
 
                     // Rest  of creation:
                     + ");";
@@ -160,7 +167,7 @@ public class DBAdapter {
         return db.update(SUBJECT_TABLE, newValues, where, null) != 0;
     }
 
-    public long insertHistoryRow(String subject, String time, String date) {
+    public long insertHistoryRow(String subject, String time, String date, String humanDate) {
 		/*
 		 * CHANGE 3:
 		 */
@@ -170,7 +177,8 @@ public class DBAdapter {
         ContentValues initialValues = new ContentValues();
         initialValues.put(HISTORY_SUBJECT, subject);
         initialValues.put(HISTORY_DATE, date);
-        initialValues.put(HISTORY_TIME, time);
+        initialValues.put(HISTORY_HUMAN_DATE, humanDate);
+        initialValues.put(HISTORY_TIME_ELAPSED, time);
 
 
         // Insert it into the database.
@@ -198,7 +206,7 @@ public class DBAdapter {
     public Cursor getAllHistoryRows() {
         String where = null;
         Cursor c = 	db.query(true, HISTORY_TABLE, ALL_HISTORY_KEYS,
-                where, null, null, null, null, null);
+                where, null, null, null, HISTORY_DATE + " DESC", null);
         if (c != null) {
             c.moveToFirst();
         }
@@ -217,7 +225,7 @@ public class DBAdapter {
     }
 
     // Change an existing row to be equal to new data.
-    public boolean updateHistoryRow(long rowId, String subject, String time, String date) {
+    public boolean updateHistoryRow(long rowId, String subject, String time, String date, String humanDate) {
         String where = KEY_ROWID + "=" + rowId;
 
 		/*
@@ -229,7 +237,8 @@ public class DBAdapter {
         ContentValues newValues = new ContentValues();
         newValues.put(HISTORY_SUBJECT, subject);
         newValues.put(HISTORY_DATE, date);
-        newValues.put(HISTORY_TIME, time);
+        newValues.put(HISTORY_HUMAN_DATE, humanDate);
+        newValues.put(HISTORY_TIME_ELAPSED, time);
 
 
         // Insert it into the database.

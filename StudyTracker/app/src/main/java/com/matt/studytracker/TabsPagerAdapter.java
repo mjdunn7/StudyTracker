@@ -36,7 +36,7 @@ public class TabsPagerAdapter extends FragmentPagerAdapter {
                 Log.d("Adapter", "returning new homeFragment");
                 return new HomeFragment();
             case 1:
-                return new ListFragment();
+                return new HistoryFragment();
             case 2:
                 return new ChartFragment();
         }

@@ -10,26 +10,33 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.DatePicker;
+import android.widget.Button;
 import android.widget.NumberPicker;
 import android.widget.Spinner;
+import android.widget.TextView;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 /**
  * Created by matthewdunn on 7/27/15.
  */
-public class NewSessionActivity extends ActionBarActivity {
+public class NewSessionActivity extends ActionBarActivity implements DatePickerFragment.OnDateSetListener{
     private String[] subjectArray = {};
+
+    private String userSetDate;
+    private String dateDBform;
 
     public static final String MINUTES = "amount of minutes chosen for added session";
     public static final String HOURS = "amount of hours chosen for added session";
     public static final String SUBJECT = "subject chosen for added session";
-    public static final String DAY = "day chosen for added session";
-    public static final String MONTH = "month chosen for added session";
-    public static final String YEAR = "year chosen for added session";
+    public static final String DATE = "date chosen for added session";
+    public static final String DATA_BASE_DATE = "date formatted for database";
+
 
     public static final String[] MONTHS = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
@@ -38,6 +45,15 @@ public class NewSessionActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //preserves date if screen is flipped
+        if(savedInstanceState != null){
+            userSetDate = savedInstanceState.getString(DATE);
+            dateDBform = savedInstanceState.getString(DATA_BASE_DATE);
+        }else {
+            userSetDate = DateFormat.getDateInstance().format(new Date());
+            dateDBform = getCurrentDBDate();
+        }
 
         //gets subject array passed from main activity
         Intent intent = getIntent();
@@ -52,8 +68,6 @@ public class NewSessionActivity extends ActionBarActivity {
 
         actionbar.setDisplayShowTitleEnabled(false);
         actionbar.setDisplayShowHomeEnabled(false);
-
-
     }
 
     public String[] getSubjectArray(){
@@ -70,24 +84,82 @@ public class NewSessionActivity extends ActionBarActivity {
         NumberPicker minutesPicker = (NumberPicker) findViewById(R.id.minutes_picker);
         int minutes = minutesPicker.getValue();
 
-        DatePicker datePicker = (DatePicker) findViewById(R.id.date_picker);
-        int year = datePicker.getYear();
-        int day = datePicker.getDayOfMonth();
-        int month = datePicker.getMonth();
-
         Intent intent = new Intent(NewSessionActivity.this, MainActivity.class)
                 .putExtra(SUBJECT, subject)
                 .putExtra(HOURS, hours)
                 .putExtra(MINUTES, minutes)
-                .putExtra(DAY, day)
-                .putExtra(YEAR, year)
-                .putExtra(MONTH, month);
+                .putExtra(DATE, userSetDate)
+                .putExtra(DATA_BASE_DATE, dateDBform);
 
         setResult(Activity.RESULT_OK, intent);
         finish();
 
     }
-    public static class NewSessionFragment extends Fragment{
+
+    @Override
+    public void onDateChosen(int year, int month, int day) {
+        userSetDate = NewSessionActivity.MONTHS[month];
+        userSetDate += " " + Integer.toString(day) + ",";
+        userSetDate += " " + Integer.toString(year);
+
+        dateDBform = getGivenDBDate(year, month, day);
+
+        TextView newSessionDate = (TextView) findViewById(R.id.new_session_date);
+        newSessionDate.setText(userSetDate);
+    }
+
+    private String getGivenDBDate(int year, int month, int day){
+        String givenDate;
+
+        givenDate = Integer.toString(year);
+
+        if(month < 10){
+            givenDate += "0" + Integer.toString(month);
+        }else {
+            givenDate += Integer.toString(month);
+        }
+
+        if(day < 10){
+            givenDate += "0" + Integer.toString(day);
+        }else {
+            givenDate += Integer.toString(day);
+        }
+
+        givenDate += "0200";
+
+        return givenDate;
+    }
+
+    private String getCurrentDBDate(){
+        String currentDate;
+        currentDate = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
+
+        if(Calendar.getInstance().get(Calendar.MONTH) < 10){
+            currentDate += "0" + Integer.toString(Calendar.getInstance().get(Calendar.MONTH));
+        }else {
+            currentDate += Integer.toString(Calendar.getInstance().get(Calendar.MONTH));
+        }
+
+        if(Calendar.getInstance().get(Calendar.DAY_OF_MONTH) < 10){
+            currentDate += "0" + Integer.toString(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
+        }else {
+            currentDate += Integer.toString(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
+        }
+
+        currentDate += "0200";
+
+        return currentDate;
+
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState){
+        savedInstanceState.putString(DATE, userSetDate);
+        savedInstanceState.putString(DATA_BASE_DATE, dateDBform);
+    }
+
+
+    public static class NewSessionFragment extends Fragment {
         public ArrayAdapter<String> subjectSelectionAdaptor;
         public List<String> classList;
         private String[] subjectsArray = {};
@@ -113,7 +185,22 @@ public class NewSessionActivity extends ActionBarActivity {
             hoursPicker.setMaxValue(9);
             hoursPicker.setMinValue(0);
             minutesPicker.setMaxValue(59);
-            minutesPicker.setMinValue(1);
+            minutesPicker.setMinValue(0);
+
+            //Sets date to current date
+            TextView newSessionDate = (TextView) rootView.findViewById(R.id.new_session_date);
+            newSessionDate.setText(((NewSessionActivity) getActivity()).userSetDate);
+
+            Button dateChanger = (Button) rootView.findViewById(R.id.session_date_changer);
+            dateChanger.setOnClickListener(new Button.OnClickListener() {
+
+                @Override
+                public void onClick(View view) {
+                    DatePickerFragment datePickerFragment = new DatePickerFragment();
+                    datePickerFragment.show(getFragmentManager(), "new session date picker");
+                }
+            });
+
 
 
             return rootView;

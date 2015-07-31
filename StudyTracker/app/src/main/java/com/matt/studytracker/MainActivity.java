@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 
 import java.text.DateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 
@@ -51,10 +52,10 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     public void onDeleteConfirmed() {
         HomeFragment homeFrag = (HomeFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getHomeTag());
         if(homeFrag != null) {
-            Log.d("MainActivity", "homeFrag is not null");
+            //Log.d("MainActivity", "homeFrag is not null");
             homeFrag.removeSubject(indexToRemove);
         }else{
-            Log.d("MainActivity", "homeFrag is null");
+            //Log.d("MainActivity", "homeFrag is null");
             HomeFragment newFragment = new HomeFragment();
 
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -84,26 +85,58 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     }
 
     @Override
-    public void sendInfo(String subject, String timeElapsed) {
-        //mAdapter.Fragment2.addHistory(subject, timeElapsed);
+    public void addToHistory(String subject, String timeElapsed) {
+        String date = DateFormat.getDateInstance().format(new Date());
+        String DBdate = getCurrentDBdate();
+        newHistoryEntry(subject, timeElapsed, date, DBdate, false);
+    }
 
-        ListFragment listFrag = (ListFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getListTag());
-        if(listFrag != null) {
-            Log.d("MainActivity", "listFrag is not null");
-            listFrag.addHistory(subject, timeElapsed);
+    private String getCurrentDBdate(){
+        String currentDate;
+        currentDate = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
+
+        if(Calendar.getInstance().get(Calendar.MONTH) < 10){
+            currentDate += "0" + Integer.toString(Calendar.getInstance().get(Calendar.MONTH));
+        }else {
+            currentDate += Integer.toString(Calendar.getInstance().get(Calendar.MONTH));
+        }
+
+        if(Calendar.getInstance().get(Calendar.DAY_OF_MONTH) < 10){
+            currentDate += "0" + Integer.toString(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
+        }else {
+            currentDate += Integer.toString(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
+        }
+
+        if (Calendar.getInstance().get(Calendar.HOUR_OF_DAY) < 10){
+            currentDate += "0" + Integer.toString(Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
         }else{
-            Log.d("MainActivity", "listFrag is null");
-            ListFragment newFragment = new ListFragment();
+            currentDate += Integer.toString(Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
+        }
+
+        if(Calendar.getInstance().get(Calendar.MINUTE) < 10){
+            currentDate += "0" + Integer.toString(Calendar.getInstance().get(Calendar.MINUTE));
+        }else{
+            currentDate += Integer.toString(Calendar.getInstance().get(Calendar.MINUTE));
+        }
+
+        return currentDate;
+    }
+
+    private void newHistoryEntry(String subject, String timeElapsed, String date, String DBdate, boolean manuallyAdded){
+        HistoryFragment listFrag = (HistoryFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getListTag());
+        if(listFrag != null) {
+            //Log.d("MainActivity", "listFrag is not null");
+            listFrag.addHistory(subject, timeElapsed, date, manuallyAdded);
+        }else{
+           // Log.d("MainActivity", "listFrag is null");
+            HistoryFragment newFragment = new HistoryFragment();
 
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.replace(R.id.pager, newFragment);
             transaction.commit();
-            newFragment.addHistory(subject, timeElapsed);
+            newFragment.addHistory(subject, timeElapsed, date, manuallyAdded);
         }
-
-
-        //stoppedSubject = String.format(subject);
-        addHistoryToDataBase(subject, timeElapsed);
+        addHistoryToDataBase(subject, timeElapsed, DBdate, date);
     }
 
     @Override
@@ -112,7 +145,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
             subjectArray = savedInstanceState.getStringArray(SUBJECT_ARRAY);
         }
 
-        Log.d("MainActivity", "onCreate");
+        //Log.d("MainActivity", "onCreate");
 
         super.onCreate(savedInstanceState);
         openDataBase();
@@ -201,6 +234,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode, data);
+
+        //for when "add class" activity returns
         if(requestCode == AddClass.ACTIVITY_ID && resultCode == Activity.RESULT_OK) {
             String className = data.getExtras().getString("class_name");
             if (className.trim().length() > 0) {
@@ -221,11 +256,10 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
             }
         }
 
+        //for when "add session" activity returns
         if(requestCode == NewSessionActivity.ACTIVITY_ID && resultCode == Activity.RESULT_OK){
-            String date;
-            date = NewSessionActivity.MONTHS[data.getExtras().getInt(NewSessionActivity.MONTH)];
-            date += " " + Integer.toString(data.getExtras().getInt(NewSessionActivity.DAY)) + ",";
-            date += " " + Integer.toString(data.getExtras().getInt(NewSessionActivity.YEAR));
+            String date = data.getExtras().getString(NewSessionActivity.DATE);
+            String DBdate = data.getExtras().getString(NewSessionActivity.DATA_BASE_DATE);
 
             String subject = data.getExtras().getString(NewSessionActivity.SUBJECT);
             String hours = Integer.toString(data.getExtras().getInt(NewSessionActivity.HOURS));
@@ -240,9 +274,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
             String time = hours + ":" + minutes + ":00";
 
-            addHistoryToDataBase(subject, time, date);
-
-
+            newHistoryEntry(subject, time, date, DBdate, true);
         }
     }
 
@@ -252,11 +284,11 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
     public void addHistoryToDataBase(String subject, String time){
         String date  = DateFormat.getDateInstance().format(new Date());
-        myDB.insertHistoryRow(subject, time, date);
+       // myDB.insertHistoryRow(subject, time, date);
     }
 
-    public void addHistoryToDataBase(String subject, String time, String date){
-        myDB.insertHistoryRow(subject, time, date);
+    public void addHistoryToDataBase(String subject, String time, String date, String humanDate){
+        myDB.insertHistoryRow(subject, time, date, humanDate);
     }
 
     @Override
@@ -287,6 +319,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         Intent intent = new Intent(this, TimerService.class);
         startService(intent);
 
+
+        //Binds activity to timer service
         mConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName componentName, IBinder iBinder) {

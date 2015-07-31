@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_height="wrap_content"
+    android:layout_height="fill_parent"
     android:layout_width="fill_parent"
     android:orientation="vertical">
     <ScrollView
@@ -24,7 +26,8 @@
                 android:layout_marginBottom="3dp"
                 android:layout_marginLeft="8dp"
                 android:textSize="20sp"
-                android:textColor="#292929"/>
+                android:textColor="#696969"
+                android:textStyle="italic"/>
 
             <Spinner
                 android:id="@+id/subjects_spinner"
@@ -41,16 +44,36 @@
                 android:layout_height="wrap_content"
                 android:text="Select corresponding date:"
                 android:layout_marginLeft="8dp"
-                android:textColor="#292929"
+                android:layout_marginBottom="10dp"
+                android:textColor="#696969"
+                android:textStyle="italic"
                 android:textSize="20sp"/>
 
-            <DatePicker
-                 android:id="@+id/date_picker"
-                 android:layout_width="wrap_content"
-                 android:layout_height="wrap_content"
-                 android:layout_marginLeft = "10dp"
-                 android:layout_marginRight="10dp"
-                 android:descendantFocusability="blocksDescendants"/>
+            <TableLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:stretchColumns="1">
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:gravity="center_vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+                        android:textColor="#000000"
+                        android:textSize="23sp"
+                        android:id="@+id/new_session_date"/>
+
+                    <Button
+                        android:id="@+id/session_date_changer"
+                        android:text="Change Date"
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:layout_gravity="right|center_vertical"
+                        android:layout_marginRight="8dp"
+                        android:onClick="changeDateClicked"/>
+                </TableRow>
+            </TableLayout>
 
             <View
                 android:layout_width="fill_parent"
@@ -63,8 +86,10 @@
                 android:layout_height="wrap_content"
                 android:text="Enter elapsed time:"
                 android:layout_marginLeft="8dp"
+                android:layout_marginBottom="10dp"
                 android:textSize="20sp"
-                android:textColor="#292929"/>
+                android:textColor="#696969"
+                android:textStyle="italic" />
 
             <TableLayout
                 android:layout_width="match_parent"
@@ -100,14 +125,18 @@
                         android:layout_marginRight="10dp"
                         android:layout_marginLeft="70dp"
                         android:layout_weight="1"
-                        android:descendantFocusability="blocksDescendants"/>
+                        android:descendantFocusability="blocksDescendants"
+                        android:scaleX=".85"
+                        android:scaleY=".85"/>
                     <NumberPicker
                         android:layout_width="60dp"
                         android:layout_height="wrap_content"
                         android:id="@+id/minutes_picker"
                         android:layout_weight="1"
                         android:layout_marginRight="70dp"
-                        android:descendantFocusability="blocksDescendants" />
+                        android:descendantFocusability="blocksDescendants"
+                        android:scaleX=".85"
+                        android:scaleY=".85"/>
                 </TableRow>
             </TableLayout>
 
@@ -123,5 +152,4 @@
     android:layout_gravity="center|bottom"
     android:background="#33ACCC"
     android:onClick="donePressed" />
-
 </LinearLayout>
