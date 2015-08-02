@@ -39,6 +39,7 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
 
 
     public static final String[] MONTHS = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+    public static final String[] DAYS = {"", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
     public static final int ACTIVITY_ID = 2;
 
@@ -51,7 +52,10 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
             userSetDate = savedInstanceState.getString(DATE);
             dateDBform = savedInstanceState.getString(DATA_BASE_DATE);
         }else {
-            userSetDate = DateFormat.getDateInstance().format(new Date());
+            Calendar calendar = Calendar.getInstance();
+            int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+            userSetDate = DAYS[dayOfWeek];
+            userSetDate += ", " + DateFormat.getDateInstance().format(new Date());
             dateDBform = getCurrentDBDate();
         }
 
@@ -98,7 +102,12 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
 
     @Override
     public void onDateChosen(int year, int month, int day) {
-        userSetDate = NewSessionActivity.MONTHS[month];
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, day);
+        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+
+        userSetDate = DAYS[dayOfWeek];
+        userSetDate += ", " + NewSessionActivity.MONTHS[month];
         userSetDate += " " + Integer.toString(day) + ",";
         userSetDate += " " + Integer.toString(year);
 
@@ -125,7 +134,7 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
             givenDate += Integer.toString(day);
         }
 
-        givenDate += "0200";
+        givenDate += "2357";
 
         return givenDate;
     }
@@ -146,7 +155,7 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
             currentDate += Integer.toString(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
         }
 
-        currentDate += "0200";
+        currentDate += "2357";
 
         return currentDate;
 
@@ -162,7 +171,7 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
     public static class NewSessionFragment extends Fragment {
         public ArrayAdapter<String> subjectSelectionAdaptor;
         public List<String> classList;
-        private String[] subjectsArray = {};
+        private String[] subjectsArray = {""};
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

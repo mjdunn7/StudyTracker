@@ -9,6 +9,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
@@ -151,6 +153,9 @@ public class HomeFragment extends Fragment
 
                     timer.setText("0:00:00");
                     topView.setVisibility(View.VISIBLE);
+                    Animation animation = AnimationUtils.loadAnimation(getActivity(), R.anim.abc_slide_in_bottom);
+                    topView.startAnimation(animation);
+
                 }
             }
         });
@@ -187,16 +192,23 @@ public class HomeFragment extends Fragment
                     stoppedAt = System.currentTimeMillis();
 
                     stoppedTime = timer.getText().toString();
-                    stoppedSubject = subjectString;// subject.getText().toString();
+                    stoppedSubject = subjectString;
 
                     Log.d("stoppedSubject", stoppedSubject);
                     Log.d("stopperTime", stoppedTime);
 
                     mCallback.addToHistory(stoppedSubject, stoppedTime);
-                    topView.setVisibility(View.GONE);
+                    Animation animation = AnimationUtils.loadAnimation(getActivity(), R.anim.abc_fade_out);
+                    animation.setDuration(500);
+                    topView.startAnimation(animation);
+                    topView.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            topView.setVisibility(View.GONE);
+                        }
+                    }, 500);
 
                     ((MainActivity) getActivity()).stopTimerService();
-                    //((MainActivity) getActivity()).
                 }
 
                 timerRunning = false;

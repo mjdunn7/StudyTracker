@@ -4,6 +4,8 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
@@ -15,6 +17,7 @@ import java.util.List;
 public class HistoryListAdapter extends ArrayAdapter<HistoryItem> {
     List<HistoryItem> history;
     public static final String TAG = "HistoryListAdapter";
+    private Context mContext;
 
     public HistoryListAdapter(Context context, int resource, int textViewResourceId, HistoryItem[] objects) {
         super(context, resource, textViewResourceId, objects);
@@ -22,6 +25,7 @@ public class HistoryListAdapter extends ArrayAdapter<HistoryItem> {
 
     public HistoryListAdapter(Context context, int resource, int resource2, List<HistoryItem> items) {
         super(context, resource, resource2, items);
+        mContext = context;
         history = items;
     }
 
@@ -47,6 +51,9 @@ public class HistoryListAdapter extends ArrayAdapter<HistoryItem> {
             date.setText(history.get(position).getDate());
             timeElapsed.setText(history.get(position).getTimeElapsed());
 
+            Animation animation = AnimationUtils.loadAnimation(mContext, R.anim.abc_fade_in);
+            convertView.startAnimation(animation);
+
             return convertView;
         } else {
             TextView subject = (TextView) convertView.findViewById(R.id.history_list_textview);
@@ -56,6 +63,9 @@ public class HistoryListAdapter extends ArrayAdapter<HistoryItem> {
             subject.setText(history.get(position).getSubject());
             date.setText(history.get(position).getDate());
             timeElapsed.setText(history.get(position).getTimeElapsed());
+
+            Animation animation = AnimationUtils.loadAnimation(mContext, R.anim.abc_fade_in);
+            convertView.startAnimation(animation);
 
             return convertView;
         }

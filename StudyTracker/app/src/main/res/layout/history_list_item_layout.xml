@@ -34,7 +34,8 @@
                 android:layout_marginLeft="10dp"
                 android:id="@+id/history_list_date"
                 android:textSize="15sp"
-                android:textColor="#000000"
+                android:textColor="#696969"
+                android:textStyle="italic"
                 android:text = "Jun 20, 2015"/>
 
         </LinearLayout>
@@ -47,7 +48,7 @@
             android:id="@+id/history_list_time"
             android:textSize="22sp"
             android:padding="12dp"
-            android:textColor="#000000"
+            android:textColor="#008000"
             android:text = "0:00:00"/>
 
     </TableRow>

@@ -86,7 +86,11 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
     @Override
     public void addToHistory(String subject, String timeElapsed) {
-        String date = DateFormat.getDateInstance().format(new Date());
+        Calendar calendar = Calendar.getInstance();
+        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+
+        String date = NewSessionActivity.DAYS[dayOfWeek];
+        date += ", " + DateFormat.getDateInstance().format(new Date());
         String DBdate = getCurrentDBdate();
         newHistoryEntry(subject, timeElapsed, date, DBdate, false);
     }
@@ -126,7 +130,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         HistoryFragment listFrag = (HistoryFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getListTag());
         if(listFrag != null) {
             //Log.d("MainActivity", "listFrag is not null");
-            listFrag.addHistory(subject, timeElapsed, date, manuallyAdded);
+            listFrag.addHistory(subject, timeElapsed, date, DBdate, manuallyAdded);
         }else{
            // Log.d("MainActivity", "listFrag is null");
             HistoryFragment newFragment = new HistoryFragment();
@@ -134,7 +138,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.replace(R.id.pager, newFragment);
             transaction.commit();
-            newFragment.addHistory(subject, timeElapsed, date, manuallyAdded);
+            newFragment.addHistory(subject, timeElapsed, date, DBdate, manuallyAdded);
         }
         addHistoryToDataBase(subject, timeElapsed, DBdate, date);
     }

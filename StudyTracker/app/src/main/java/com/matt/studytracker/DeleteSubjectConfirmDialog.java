@@ -19,6 +19,7 @@ public class DeleteSubjectConfirmDialog extends DialogFragment{
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Warning");
         builder.setMessage("Are you sure you want to delete this subject?");
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override

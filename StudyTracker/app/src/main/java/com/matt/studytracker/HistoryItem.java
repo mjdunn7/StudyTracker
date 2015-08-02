@@ -7,6 +7,7 @@ public class HistoryItem {
     private String _subject = "";
     private String _timeElapsed = "";
     private String _date = "";
+    private long DBdate = 0;
 
     public void setSubject(String subject){
         _subject = subject;
@@ -20,6 +21,8 @@ public class HistoryItem {
         _date = date;
     }
 
+    public void setDBdate(long date){ DBdate = date; }
+
     public String getSubject(){
         return _subject;
     }
@@ -31,5 +34,7 @@ public class HistoryItem {
     public String getDate(){
         return _date;
     }
+
+    public long getDBdate(){ return DBdate; }
 
 }
