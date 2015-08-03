@@ -9,6 +9,7 @@ public class HistoryItem {
     private String _date = "";
     private long DBdate = 0;
     private int dataBaseRowID = 0;
+    private String interval = "";
 
     public void setSubject(String subject){
         _subject = subject;
@@ -30,6 +31,10 @@ public class HistoryItem {
         dataBaseRowID = id;
     }
 
+    public void setInterval(String startToEnd){
+        interval = startToEnd;
+    }
+
     public String getSubject(){
         return _subject;
     }
@@ -48,5 +53,9 @@ public class HistoryItem {
 
     public int getDataBaseRowID(){
         return dataBaseRowID;
+    }
+
+    public String getInterval(){
+        return interval;
     }
 }

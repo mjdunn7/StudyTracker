@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -44,6 +45,9 @@ public class HomeFragment extends Fragment
     protected long startedAt;
     protected long stoppedAt;
     protected String subjectString;
+
+    protected String startHumanTime;
+    protected String endHumanTime;
 
     protected boolean syncedWithDB = false;
 
@@ -91,10 +95,10 @@ public class HomeFragment extends Fragment
     StopClicked mCallback;
 
     public interface StopClicked{
-         void addToHistory(String subject, String timeElapsed, long startTimeMillis, long endTimeMillis);
+         void addToHistory(String subject, String timeElapsed, String interval);
     }
 
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
 
         final View rootView = inflater.inflate(R.layout.home_fragment, container, false);
@@ -194,10 +198,14 @@ public class HomeFragment extends Fragment
                     stoppedTime = timer.getText().toString();
                     stoppedSubject = subjectString;
 
-                    Log.d("stoppedSubject", stoppedSubject);
-                    Log.d("stopperTime", stoppedTime);
+                    int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+                    int minute = Calendar.getInstance().get(Calendar.MINUTE);
+                    endHumanTime = getReadableTime(hour, minute);
 
-                    mCallback.addToHistory(stoppedSubject, stoppedTime, startedAt, stoppedAt);
+                    String interval = startHumanTime + " - " + endHumanTime;
+
+                    mCallback.addToHistory(stoppedSubject, stoppedTime, interval);
+
                     Animation animation = AnimationUtils.loadAnimation(getActivity(), R.anim.abc_fade_out);
                     animation.setDuration(500);
                     topView.startAnimation(animation);
@@ -249,7 +257,39 @@ public class HomeFragment extends Fragment
 
     public void timerInitiated(){
         startedAt = System.currentTimeMillis();
+
+        int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        int minute = Calendar.getInstance().get(Calendar.MINUTE);
+        startHumanTime = getReadableTime(hour, minute);
+
         timerRunning = true;
+    }
+
+    private String getReadableTime(int hour, int minute){
+        String startTime;
+        if(hour <= 12){
+            startTime = Integer.toString(hour) + ":";
+            if(minute < 10){
+                startTime += "0" + Integer.toString(minute);
+            }else {
+                startTime += Integer.toString(minute);
+            }
+            if(hour == 12){
+                startTime += " PM";
+            }else {
+                startTime += " AM";
+            }
+        }else{
+            hour = hour - 12;
+            startTime = Integer.toString(hour) + ":";
+            if (minute < 10){
+                startTime += "0" + Integer.toString(minute);
+            }else {
+                startTime += Integer.toString(minute);
+            }
+            startTime += " PM";
+        }
+        return startTime;
     }
 
     protected void setTimeDisplay(){

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,18 +40,34 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
     public static final String END_MINUTE = "end minute";
     public static final String DATA_BASE_DATE = "date formatted for database";
 
+    public static final String ELAPSED_TIME = "elapsed time";
+    public static final String INTERVAL = "time interval";
+
+    private String elapsedTime = "0:00:00";
 
     public static final String[] MONTHS = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
     public static final String[] DAYS = {"", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
     public static final int ACTIVITY_ID = 2;
 
-    private int startHour = 0;
+    private int startYear;
+    private int startMonth;
+    private int startDay;
+    private int endYear;
+    private int endMonth;
+    private int endDay;
+
+    public static final String START_YEAR = "start year";
+    public static final String START_MONTH = "start month";
+    public static final String START_DAY = "start day";
+    public static final String END_YEAR = "end year";
+    public static final String END_MONTH = "end month";
+    public static final String END_DAY = "end day";
+
+    private int startHour = 12;
     private int startMinute = 0;
-    private int endHour = 0;
+    private int endHour = 12;
     private int endMinute = 0;
-    private Calendar startCalendar;
-    private Calendar endCalendar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,8 +76,26 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
         //preserves date if screen is flipped
         if(savedInstanceState != null){
             endDate = savedInstanceState.getString(END_DATE);
+            startDate = savedInstanceState.getString(START_DATE);
             dateDBform = savedInstanceState.getString(DATA_BASE_DATE);
+
+            startHour = savedInstanceState.getInt(START_HOUR);
+            startMinute = savedInstanceState.getInt(START_MINUTE);
+            endHour = savedInstanceState.getInt(END_HOUR);
+            endMinute = savedInstanceState.getInt(END_MINUTE);
+
+            startYear = savedInstanceState.getInt(START_YEAR);
+            startMonth = savedInstanceState.getInt(START_MONTH);
+            startDay = savedInstanceState.getInt(START_DAY);
+
+            endYear = savedInstanceState.getInt(END_YEAR);
+            endMonth = savedInstanceState.getInt(END_MONTH);
+            endDay = savedInstanceState.getInt(END_DAY);
+
+            elapsedTime = savedInstanceState.getString(ELAPSED_TIME);
+
         }else {
+
             //otherwise, sets default start and end dates to current date
             Calendar calendar = Calendar.getInstance();
             int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
@@ -70,14 +105,19 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
 
             //set default start and end hours and minutes to current hour and minute
             startHour = calendar.get(Calendar.HOUR_OF_DAY);
+            Log.d("NewSessionActivity", "startHour: " + Integer.toString(startHour));
             startMinute = calendar.get(Calendar.MINUTE);
+
+            startYear = calendar.get(Calendar.YEAR);
+            startMonth = calendar.get(Calendar.MONTH);
+            startDay = calendar.get(Calendar.DAY_OF_MONTH);
+
+            endYear = startYear;
+            endMonth = startMonth;
+            endDay = startDay;
 
             endHour = startHour;
             endMinute = startMinute;
-
-            startCalendar = Calendar.getInstance();
-            endCalendar = Calendar.getInstance();
-
 
             dateDBform = getCurrentDBDate();
         }
@@ -101,6 +141,32 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
         return subjectArray;
     }
 
+
+    public void updateElapsedTime(){
+        Calendar startCalendar = Calendar.getInstance();
+        Calendar endCalendar = Calendar.getInstance();
+        startCalendar.set(startYear, startMonth, startDay, startHour, startMinute);
+        endCalendar.set(endYear, endMonth, endDay, endHour, endMinute);
+
+        long startTimeMillis = startCalendar.getTimeInMillis();
+        long endTimeMillis = endCalendar.getTimeInMillis();
+
+        long timeDiff = Math.abs(endTimeMillis - startTimeMillis);
+
+        int hours = (int) timeDiff/3600000;
+        int minutes = (int) (timeDiff - (hours * 3600000)) / 60000;
+
+        elapsedTime = Integer.toString(hours) + ":";
+        if(minutes < 10){
+            elapsedTime += "0" + Integer.toString(minutes);
+        } else {
+            elapsedTime += Integer.toString(minutes);
+        }
+        elapsedTime += ":00";
+
+        TextView textView = (TextView) findViewById(R.id.start_end_diff);
+        textView.setText(elapsedTime);
+    }
 
     //for when the user taps the button to change the start time
     public void  changeStartTimeClicked(View v){
@@ -149,23 +215,30 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
         Spinner spinner = (Spinner) findViewById(R.id.subjects_spinner);
         String subject = spinner.getSelectedItem().toString();
 
-        //NumberPicker hoursPicker = (NumberPicker) findViewById(R.id.hours_picker);
-        int hours =  0; //hoursPicker.getValue();
-
-        //NumberPicker minutesPicker = (NumberPicker) findViewById(R.id.minutes_picker);
-        int minutes =  0; //minutesPicker.getValue();
+        TextView textView = (TextView) findViewById(R.id.start_end_diff);
+        String elapsedTime = (String) textView.getText();
 
         Intent intent = new Intent(NewSessionActivity.this, MainActivity.class)
                 .putExtra(SUBJECT, subject)
-                .putExtra(HOURS, hours)
-                .putExtra(MINUTES, minutes)
+                .putExtra(ELAPSED_TIME, elapsedTime)
                 .putExtra(START_DATE, startDate)
                 .putExtra(END_DATE, endDate)
+                .putExtra(INTERVAL, getIntervalString())
                 .putExtra(DATA_BASE_DATE, dateDBform);
 
         setResult(Activity.RESULT_OK, intent);
         finish();
 
+    }
+
+    private String getIntervalString(){
+        TextView textView = (TextView) findViewById(R.id.start_time_textview);
+        String start = (String) textView.getText();
+
+        textView = (TextView) findViewById(R.id.end_time_textview);
+        String end = (String) textView.getText();
+
+        return start + " - " + end;
     }
 
     @Override
@@ -185,7 +258,10 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
             String endTime = getReadableTime(hour, minute);
             TextView textView = (TextView) findViewById(R.id.end_time_textview);
             textView.setText(endTime);
+
+            dateDBform = getGivenDBDate(endYear, endMonth, endDay, endHour, endMinute);
         }
+        updateElapsedTime();
     }
 
     private String getReadableTime(int hour, int minute){
@@ -208,7 +284,7 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
             if (minute < 10){
                 startTime += "0" + Integer.toString(minute);
             }else {
-                startTime = Integer.toString(minute);
+                startTime += Integer.toString(minute);
             }
             startTime += " PM";
         }
@@ -228,22 +304,29 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
         date += " " + Integer.toString(day) + ",";
         date += " " + Integer.toString(year);
 
-
-
         if(qualifier.equals("start")) {
             TextView startDateTextView = (TextView) findViewById(R.id.start_date);
             startDateTextView.setText(date);
             startDate = date;
+
+            startYear = year;
+            startMonth = month;
+            startDay = day;
         }
         if(qualifier.equals("end")){
             TextView endDateTextView = (TextView) findViewById(R.id.end_date);
             endDateTextView.setText(date);
             endDate = date;
-            dateDBform = getGivenDBDate(year, month, day);
+            dateDBform = getGivenDBDate(year, month, day, endHour, endMinute);
+
+            endYear = year;
+            endMonth = month;
+            endDay = day;
         }
+        updateElapsedTime();
     }
 
-    private String getGivenDBDate(int year, int month, int day){
+    private String getGivenDBDate(int year, int month, int day, int hour, int minute){
         String givenDate;
 
         givenDate = Integer.toString(year);
@@ -260,11 +343,23 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
             givenDate += Integer.toString(day);
         }
 
+        if(hour < 10){
+            givenDate += "0" + Integer.toString(hour);
+        }else {
+            givenDate += Integer.toString(hour);
+        }
 
-        //TODO: Change hour and minute figure to value given by user
-        givenDate += "2357";
+        if(minute < 10){
+            givenDate += "0" + Integer.toString(minute);
+        }else {
+            givenDate += Integer.toString(minute);
+        }
 
-        givenDate += Calendar.getInstance().get(Calendar.SECOND);
+        if(Calendar.getInstance().get(Calendar.SECOND) < 10){
+            givenDate += "0" + Integer.toString(Calendar.getInstance().get(Calendar.SECOND));
+        }else {
+            givenDate += Integer.toString(Calendar.getInstance().get(Calendar.SECOND));
+        }
 
         return givenDate;
     }
@@ -285,17 +380,30 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
             currentDate += Integer.toString(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
         }
 
-        //TODO: Change hour and minute figure to value given by user
-        currentDate += "2357";
+        if(Calendar.getInstance().get(Calendar.HOUR_OF_DAY) < 10){
+            currentDate += "0" + Integer.toString(Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
+        }else {
+            currentDate += Integer.toString(Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
+        }
 
-        currentDate += Calendar.getInstance().get(Calendar.SECOND);
+        if(Calendar.getInstance().get(Calendar.MINUTE) < 10){
+            currentDate += "0" + Integer.toString(Calendar.getInstance().get(Calendar.MINUTE));
+        }else {
+            currentDate += Integer.toString(Calendar.getInstance().get(Calendar.MINUTE));
+        }
+
+        if(Calendar.getInstance().get(Calendar.SECOND) < 10){
+            currentDate += "0" + Integer.toString(Calendar.getInstance().get(Calendar.SECOND));
+        }else {
+            currentDate += Integer.toString(Calendar.getInstance().get(Calendar.SECOND));
+        }
 
         return currentDate;
 
     }
 
     @Override
-    public void onSaveInstanceState(Bundle savedInstanceState){
+    public void onSaveInstanceState(Bundle savedInstanceState) {
         savedInstanceState.putString(END_DATE, endDate);
         savedInstanceState.putString(START_DATE, startDate);
         savedInstanceState.putInt(START_HOUR, startHour);
@@ -303,6 +411,13 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
         savedInstanceState.putInt(END_HOUR, endHour);
         savedInstanceState.putInt(END_MINUTE, endMinute);
         savedInstanceState.putString(DATA_BASE_DATE, dateDBform);
+        savedInstanceState.putInt(START_YEAR, startYear);
+        savedInstanceState.putInt(START_MONTH, startMonth);
+        savedInstanceState.putInt(START_DAY, startDay);
+        savedInstanceState.putInt(END_YEAR, endYear);
+        savedInstanceState.putInt(END_MONTH, endMonth);
+        savedInstanceState.putInt(END_DAY, endDay);
+        savedInstanceState.putString(ELAPSED_TIME, elapsedTime);
     }
 
 
@@ -310,6 +425,7 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
         public ArrayAdapter<String> subjectSelectionAdaptor;
         public List<String> classList;
         private String[] subjectsArray = {""};
+
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -326,23 +442,29 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
             Spinner spinner = (Spinner) rootView.findViewById(R.id.subjects_spinner);
             spinner.setAdapter(subjectSelectionAdaptor);
 
-
             //TODO: determine whether or not activity was started from editing or adding
-           // NumberPicker hoursPicker = (NumberPicker) rootView.findViewById(R.id.hours_picker);
-           // NumberPicker minutesPicker = (NumberPicker) rootView.findViewById(R.id.minutes_picker);
 
-           // hoursPicker.setMaxValue(9);
-           // hoursPicker.setMinValue(0);
-           // minutesPicker.setMaxValue(59);
-           // minutesPicker.setMinValue(0);
+            //Sets dates and times to whatever is stored in the main activity
+            TextView textView = (TextView) rootView.findViewById(R.id.start_date);
+            textView.setText(((NewSessionActivity) getActivity()).startDate);
 
-            //Sets date to current date
-            TextView newSessionDate = (TextView) rootView.findViewById(R.id.new_session_date);
-            newSessionDate.setText(((NewSessionActivity) getActivity()).userSetDate);
+            textView = (TextView) rootView.findViewById(R.id.end_date);
+            textView.setText(((NewSessionActivity) getActivity()).endDate);
 
+            //sets start time textview
+            textView = (TextView) rootView.findViewById(R.id.start_time_textview);
+            int hour = ((NewSessionActivity)getActivity()).startHour;
+            int minute = ((NewSessionActivity)getActivity()).startMinute;
+            textView.setText(((NewSessionActivity) getActivity()).getReadableTime(hour, minute));
 
+            //sets end time textview
+            textView = (TextView) rootView.findViewById(R.id.end_time_textview);
+            hour = ((NewSessionActivity) getActivity()).endHour;
+            minute = ((NewSessionActivity) getActivity()).endMinute;
+            textView.setText(((NewSessionActivity) getActivity()).getReadableTime(hour, minute));
 
-
+            textView = (TextView) rootView.findViewById(R.id.start_end_diff);
+            textView.setText(((NewSessionActivity) getActivity()).elapsedTime);
 
             return rootView;
         }

@@ -44,10 +44,12 @@ public class HistoryListAdapter extends ArrayAdapter<HistoryItem> {
             TextView subject = (TextView) convertView.findViewById(R.id.history_list_textview);
             TextView date = (TextView) convertView.findViewById(R.id.history_list_date);
             TextView timeElapsed = (TextView) convertView.findViewById(R.id.history_list_time);
+            TextView interval = (TextView) convertView.findViewById(R.id.history_list_interval);
 
             subject.setText(history.get(position).getSubject());
             date.setText(history.get(position).getDate());
             timeElapsed.setText(history.get(position).getTimeElapsed());
+            interval.setText(history.get(position).getInterval());
 
            // Animation animation = AnimationUtils.loadAnimation(mContext, R.anim.abc_fade_in);
            // convertView.startAnimation(animation);
@@ -57,10 +59,12 @@ public class HistoryListAdapter extends ArrayAdapter<HistoryItem> {
             TextView subject = (TextView) convertView.findViewById(R.id.history_list_textview);
             TextView date = (TextView) convertView.findViewById(R.id.history_list_date);
             TextView timeElapsed = (TextView) convertView.findViewById(R.id.history_list_time);
+            TextView interval = (TextView) convertView.findViewById(R.id.history_list_interval);
 
             subject.setText(history.get(position).getSubject());
             date.setText(history.get(position).getDate());
             timeElapsed.setText(history.get(position).getTimeElapsed());
+            interval.setText(history.get(position).getInterval());
 
             //Animation animation = AnimationUtils.loadAnimation(mContext, R.anim.abc_fade_in);
            // convertView.startAnimation(animation);

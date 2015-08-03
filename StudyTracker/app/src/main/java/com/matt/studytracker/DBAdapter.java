@@ -181,7 +181,6 @@ public class DBAdapter {
         initialValues.put(HISTORY_TIME_ELAPSED, time);
         initialValues.put(HISTORY_TIME_INTERVAL, interval);
 
-
         // Insert it into the database.
         return db.insert(HISTORY_TABLE, null, initialValues);
     }

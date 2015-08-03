@@ -131,6 +131,7 @@ public class HistoryFragment extends Fragment {
                 String subject = cursor.getString(DBAdapter.H_SUBJECT_COLUMN);
                 String humanDate = cursor.getString(DBAdapter.H_HUMAN_DATE_COLUMN);
                 String time = cursor.getString(DBAdapter.H_TIME_ELAPSED_COLUMN);
+                String interval = cursor.getString(DBAdapter.H_TIME_INTERVALS_COLUMN);
                 int id = cursor.getInt(DBAdapter.ROW_ID_COLUMN);
 
                 tempHistory = new HistoryItem();
@@ -139,6 +140,7 @@ public class HistoryFragment extends Fragment {
                 tempHistory.setTimeElapsed(time);
                 tempHistory.setDBdate(Long.parseLong(cursor.getString(DBAdapter.H_DATE_COLUMN)));
                 tempHistory.setDataBaseRowID(id);
+                tempHistory.setInterval(interval);
 
                 if(tempHistory.getDBdate() >= formattedTime) {
                     historyList.add(tempHistory);
@@ -204,7 +206,7 @@ public class HistoryFragment extends Fragment {
         return currentDate;
     }
 
-    public void addHistory(String subject, String timeElapsed, String date, String DBdate, boolean manuallyAdded) {
+    public void addHistory(String subject, String timeElapsed, String date, String DBdate, boolean manuallyAdded, String interval) {
         stoppedSubject = subject;
         stoppedTime = timeElapsed;
 
@@ -214,6 +216,7 @@ public class HistoryFragment extends Fragment {
         history.setTimeElapsed(timeElapsed);
         history.setDate(date);
         history.setDBdate(Long.parseLong(DBdate));
+        history.setInterval(interval);
 
         //To be executed if the user manually added the session
         if (manuallyAdded && historyAdaptor != null) {

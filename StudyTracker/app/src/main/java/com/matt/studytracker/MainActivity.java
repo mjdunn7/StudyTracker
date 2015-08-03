@@ -90,14 +90,14 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     }
 
     @Override
-    public void addToHistory(String subject, String timeElapsed, long startTimeMillis, long endTimeMillis) {
+    public void addToHistory(String subject, String timeElapsed, String interval) {
         Calendar calendar = Calendar.getInstance();
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
 
         String date = NewSessionActivity.DAYS[dayOfWeek];
         date += ", " + DateFormat.getDateInstance().format(new Date());
         String DBdate = getCurrentDBdate();
-        newHistoryEntry(subject, timeElapsed, date, DBdate, false, startTimeMillis, endTimeMillis);
+        newHistoryEntry(subject, timeElapsed, date, DBdate, false, interval);
     }
 
     private String getCurrentDBdate(){
@@ -140,22 +140,22 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
     private void newHistoryEntry(String subject, String timeElapsed,
                                  String date, String DBdate, boolean manuallyAdded,
-                                 long startTimeMillis, long endTimeMillis){
+                                 String interval){
         HistoryFragment listFrag = (HistoryFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getListTag());
         if(listFrag != null) {
             //Log.d("MainActivity", "listFrag is not null");
-            addHistoryToDataBase(subject, timeElapsed, DBdate, date, startTimeMillis, endTimeMillis);
-            listFrag.addHistory(subject, timeElapsed, date, DBdate, manuallyAdded);
+            addHistoryToDataBase(subject, timeElapsed, DBdate, date, interval);
+            listFrag.addHistory(subject, timeElapsed, date, DBdate, manuallyAdded, interval);
         }else{
            // Log.d("MainActivity", "listFrag is null");
-            addHistoryToDataBase(subject, timeElapsed, DBdate, date, startTimeMillis, endTimeMillis);
+            addHistoryToDataBase(subject, timeElapsed, DBdate, date, interval);
 
             HistoryFragment newFragment = new HistoryFragment();
 
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.replace(R.id.pager, newFragment);
             transaction.commit();
-            newFragment.addHistory(subject, timeElapsed, date, DBdate, manuallyAdded);
+            newFragment.addHistory(subject, timeElapsed, date, DBdate, manuallyAdded, interval);
         }
     }
 
@@ -278,23 +278,14 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
         //for when "add session" activity returns
         if(requestCode == NewSessionActivity.ACTIVITY_ID && resultCode == Activity.RESULT_OK){
-            String date = data.getExtras().getString(NewSessionActivity.DATE);
+            String date = data.getExtras().getString(NewSessionActivity.END_DATE);
             String DBdate = data.getExtras().getString(NewSessionActivity.DATA_BASE_DATE);
+            String time = data.getExtras().getString(NewSessionActivity.ELAPSED_TIME);
+            String interval = data.getExtras().getString(NewSessionActivity.INTERVAL);
 
             String subject = data.getExtras().getString(NewSessionActivity.SUBJECT);
-            String hours = Integer.toString(data.getExtras().getInt(NewSessionActivity.HOURS));
 
-            int intMinutes = data.getExtras().getInt(NewSessionActivity.MINUTES);
-            String minutes;
-            if(intMinutes > 9) {
-                minutes = Integer.toString(data.getExtras().getInt(NewSessionActivity.MINUTES));
-            }else {
-                minutes = "0" + Integer.toString(data.getExtras().getInt(NewSessionActivity.MINUTES));
-            }
-
-            String time = hours + ":" + minutes + ":00";
-
-            newHistoryEntry(subject, time, date, DBdate, true);
+            newHistoryEntry(subject, time, date, DBdate, true, interval);
         }
     }
 
@@ -304,8 +295,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
 
 
-    public void addHistoryToDataBase(String subject, String time, String date, String humanDate, long startTimeMillis, long endTimeMillis){
-        myDB.insertHistoryRow(subject, time, date, humanDate);
+    public void addHistoryToDataBase(String subject, String time, String date, String humanDate, String interval){
+       myDB.insertHistoryRow(subject, time, date, humanDate, interval);
     }
 
     @Override
