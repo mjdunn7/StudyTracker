@@ -20,9 +20,9 @@ public class SubjectLongTappedDialog extends DialogFragment {
     private String title;
 
     public interface DialogListener{
-        public void onPositiveClick();
-        public void onNegativeClick();
-        public void onNeutralClick();
+        public void onSubjectDeleteClick();
+        public void onSubjectCancelClick();
+        public void onSubjectEditClick();
     }
 
     @Override
@@ -39,23 +39,23 @@ public class SubjectLongTappedDialog extends DialogFragment {
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage("Select Action:");
+        builder.setMessage("What would you like to do with this subject?");
         builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                mListener.onPositiveClick();
+                mListener.onSubjectDeleteClick();
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                mListener.onNegativeClick();
+                mListener.onSubjectCancelClick();
             }
         });
         builder.setNeutralButton("Edit", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                mListener.onNeutralClick();
+                mListener.onSubjectEditClick();
             }
         });
         builder.setTitle(title);

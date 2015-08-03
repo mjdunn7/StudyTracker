@@ -8,6 +8,7 @@ public class HistoryItem {
     private String _timeElapsed = "";
     private String _date = "";
     private long DBdate = 0;
+    private int dataBaseRowID = 0;
 
     public void setSubject(String subject){
         _subject = subject;
@@ -21,7 +22,13 @@ public class HistoryItem {
         _date = date;
     }
 
-    public void setDBdate(long date){ DBdate = date; }
+    public void setDBdate(long date){
+        DBdate = date;
+    }
+
+    public void setDataBaseRowID(int id){
+        dataBaseRowID = id;
+    }
 
     public String getSubject(){
         return _subject;
@@ -35,6 +42,11 @@ public class HistoryItem {
         return _date;
     }
 
-    public long getDBdate(){ return DBdate; }
+    public long getDBdate(){
+        return DBdate;
+    }
 
+    public int getDataBaseRowID(){
+        return dataBaseRowID;
+    }
 }

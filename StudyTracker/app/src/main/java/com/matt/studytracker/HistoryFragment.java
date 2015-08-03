@@ -3,7 +3,6 @@ package com.matt.studytracker;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,6 +41,8 @@ public class HistoryFragment extends Fragment {
     protected boolean syncedWithDB = false;
 
     protected View rootView;
+
+    protected int historyIndexToDelete;
 
     private ListView historyListView;
 
@@ -95,22 +96,32 @@ public class HistoryFragment extends Fragment {
                 syncedWithDB = true;
             }
 
+        historyListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                historyIndexToDelete = i;
+                DeleteHistoryDialog dialog = new DeleteHistoryDialog();
+                dialog.show(getFragmentManager(), DeleteHistoryDialog.TAG);
 
-
-        if(addHistoryCalled){
-            historyList.add(0, history);
-            historyAdaptor.notifyDataSetChanged();
-        }
+                return true;
+            }
+        });
 
         return rootView;
 
 
     }
 
+    public void deleteSession(){
+        ((MainActivity) getActivity()).myDB.deleteHistoryRow(historyList.get(historyIndexToDelete).getDataBaseRowID());
+        populateListWithDB(spinner.getSelectedItem().toString());
+    }
+
     private void populateListWithDB(String when){
         Cursor cursor = ((MainActivity)getActivity()).myDB.getAllHistoryRows();
+        historyList.clear();
+
         if (cursor.moveToFirst()) {
-            historyList.clear();
             historyAdaptor.notifyDataSetChanged();
 
             long formattedTime = getFormattedPastTime(when);
@@ -120,16 +131,17 @@ public class HistoryFragment extends Fragment {
                 String subject = cursor.getString(DBAdapter.H_SUBJECT_COLUMN);
                 String humanDate = cursor.getString(DBAdapter.H_HUMAN_DATE_COLUMN);
                 String time = cursor.getString(DBAdapter.H_TIME_ELAPSED_COLUMN);
+                int id = cursor.getInt(DBAdapter.ROW_ID_COLUMN);
 
                 tempHistory = new HistoryItem();
                 tempHistory.setSubject(subject);
                 tempHistory.setDate(humanDate);
                 tempHistory.setTimeElapsed(time);
                 tempHistory.setDBdate(Long.parseLong(cursor.getString(DBAdapter.H_DATE_COLUMN)));
+                tempHistory.setDataBaseRowID(id);
 
                 if(tempHistory.getDBdate() >= formattedTime) {
                     historyList.add(tempHistory);
-                    historyAdaptor.notifyDataSetChanged();
                 }
 
 
@@ -137,6 +149,7 @@ public class HistoryFragment extends Fragment {
 
             cursor.close();
         }
+        historyAdaptor.notifyDataSetChanged();
     }
 
     private long getFormattedPastTime(String when){
@@ -187,7 +200,7 @@ public class HistoryFragment extends Fragment {
             currentDate += Integer.toString(calendar.get(Calendar.DAY_OF_MONTH));
         }
 
-        currentDate += "2359";
+        currentDate += "235900";
         return currentDate;
     }
 
@@ -202,48 +215,16 @@ public class HistoryFragment extends Fragment {
         history.setDate(date);
         history.setDBdate(Long.parseLong(DBdate));
 
-
-
-        if(historyAdaptor == null)
-            Log.d("HistoryFragment", "historyAdaptor is null");
-
+        //To be executed if the user manually added the session
         if (manuallyAdded && historyAdaptor != null) {
 
-            if (history.getDBdate() <= (Long.parseLong(getFormattedDate(Calendar.getInstance())))
-                    && !historyList.isEmpty() && history.getDBdate() >= getFormattedPastTime(spinner.getSelectedItem().toString())) {
-                int positionToAdd = -1;
-                Log.d("HistoryFragment", DBdate);
-                Log.d("currentDate", getFormattedDate(Calendar.getInstance()));
-
-                if (history.getDBdate() >= historyList.get(0).getDBdate()) {
-                    positionToAdd = 0;
-                } else {
-                    for (int i = 0; i < historyList.size() - 2; ++i) {
-                        Log.d("HistoryFragment", "for loop: " + Integer.toString(i));
-                        Log.d("HistoryFragment", "historyList(i) " + historyList.get(i).getDBdate());
-                        if (history.getDBdate() <= historyList.get(i).getDBdate() && history.getDBdate() >= historyList.get(i + 1).getDBdate()) {
-                            positionToAdd = i + 1;
-
-                        }
-                    }
-                }
-
-                if (positionToAdd == -1) {
-                    historyList.add(history);
-                    historyAdaptor.notifyDataSetChanged();
-                } else {
-                    historyList.add(positionToAdd, history);
-                    historyAdaptor.notifyDataSetChanged();
-
-                }
-            }
+            populateListWithDB(spinner.getSelectedItem().toString());
             addHistoryCalled = false;
         } else {
             if (historyAdaptor == null) {
-                addHistoryCalled = true;
+                syncedWithDB = false;
             } else {
-                historyList.add(0, history);
-                historyAdaptor.notifyDataSetChanged();
+                populateListWithDB(spinner.getSelectedItem().toString());
                 addHistoryCalled = false;
             }
         }

@@ -21,12 +21,13 @@ public class DBAdapter {
 
     // DB Fields
     public static final String KEY_ROWID = "_id";
-    public static final int COL_ROWID = 0;
 
+    public static final int ROW_ID_COLUMN = 0;
     public static final int H_SUBJECT_COLUMN = 1;
     public static final int H_DATE_COLUMN = 2;
     public static final int H_HUMAN_DATE_COLUMN = 3;
     public static final int H_TIME_ELAPSED_COLUMN = 4;
+    public static final int H_TIME_INTERVALS_COLUMN = 5;
 
 
     //subject columns
@@ -37,10 +38,12 @@ public class DBAdapter {
     public static final String HISTORY_DATE = "formatted_date";
     public static final String HISTORY_HUMAN_DATE = "human_readable_date";
     public static final String HISTORY_TIME_ELAPSED = "time";
+    public static final String HISTORY_TIME_INTERVAL = "time_interval";
 
 
     public static final String[] ALL_SUBJECT_KEYS = new String[] {KEY_ROWID, KEY_SUBJECT};
-    public static final String[] ALL_HISTORY_KEYS = new String[] {KEY_ROWID, HISTORY_SUBJECT, HISTORY_DATE, HISTORY_HUMAN_DATE, HISTORY_TIME_ELAPSED};
+    public static final String[] ALL_HISTORY_KEYS = new String[] {KEY_ROWID, HISTORY_SUBJECT, HISTORY_DATE,
+            HISTORY_HUMAN_DATE, HISTORY_TIME_ELAPSED, HISTORY_TIME_INTERVAL};
 
     // DB info: it's name, and the table we are using (just one).
     public static final String DATABASE_NAME = "MyDb";
@@ -65,7 +68,8 @@ public class DBAdapter {
                     + HISTORY_SUBJECT + " text not null,"
                     + HISTORY_DATE + " text not null,"
                     + HISTORY_HUMAN_DATE + " text not null,"
-                    + HISTORY_TIME_ELAPSED + " text not null"
+                    + HISTORY_TIME_ELAPSED + " text not null,"
+                    + HISTORY_TIME_INTERVAL + " text not null"
 
                     // Rest  of creation:
                     + ");";
@@ -167,18 +171,15 @@ public class DBAdapter {
         return db.update(SUBJECT_TABLE, newValues, where, null) != 0;
     }
 
-    public long insertHistoryRow(String subject, String time, String date, String humanDate) {
-		/*
-		 * CHANGE 3:
-		 */
-        // TODO: Update data in the row with new fields.
-        // TODO: Also change the function's arguments to be what you need!
+    public long insertHistoryRow(String subject, String time, String date, String humanDate, String interval) {
+
         // Create row's data:
         ContentValues initialValues = new ContentValues();
         initialValues.put(HISTORY_SUBJECT, subject);
         initialValues.put(HISTORY_DATE, date);
         initialValues.put(HISTORY_HUMAN_DATE, humanDate);
         initialValues.put(HISTORY_TIME_ELAPSED, time);
+        initialValues.put(HISTORY_TIME_INTERVAL, interval);
 
 
         // Insert it into the database.
@@ -188,7 +189,7 @@ public class DBAdapter {
     // Delete a row from the database, by rowId (primary key)
     public boolean deleteHistoryRow(long rowId) {
         String where = KEY_ROWID + "=" + rowId;
-        return db.delete(SUBJECT_TABLE, where, null) != 0;
+        return db.delete(HISTORY_TABLE, where, null) != 0;
     }
 
     public void deleteAllHistory() {

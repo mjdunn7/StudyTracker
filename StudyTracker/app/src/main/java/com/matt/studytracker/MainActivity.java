@@ -20,7 +20,11 @@ import java.util.Calendar;
 import java.util.Date;
 
 
-public class MainActivity extends ActionBarActivity implements ActionBar.TabListener, HomeFragment.StopClicked, SubjectLongTappedDialog.DialogListener, DeleteSubjectConfirmDialog.DeleteDialogListener {
+public class MainActivity extends ActionBarActivity implements ActionBar.TabListener,
+        HomeFragment.StopClicked,
+        SubjectLongTappedDialog.DialogListener,
+        DeleteSubjectConfirmDialog.DeleteSubjectDialogListener,
+        DeleteHistoryDialog.DeleteHistoryDialogListener{
     public static final String SUBJECT_ARRAY = "main activity subject array";
 
     public DBAdapter myDB;
@@ -40,6 +44,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     public TimerService getTimerService(){
         return timerService;
     }
+
     public void setSubjectArray(String[] array){
         subjectArray = array;
     }
@@ -49,7 +54,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     }
 
     @Override
-    public void onDeleteConfirmed() {
+    public void onDeleteSubjectConfirmed() {
         HomeFragment homeFrag = (HomeFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getHomeTag());
         if(homeFrag != null) {
             //Log.d("MainActivity", "homeFrag is not null");
@@ -69,30 +74,30 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     }
 
     @Override
-    public void onPositiveClick() {
+    public void onSubjectDeleteClick() {
         DeleteSubjectConfirmDialog dialogFragment = new DeleteSubjectConfirmDialog();
         dialogFragment.show(getSupportFragmentManager(), String.format("delete subject"));
     }
 
     @Override
-    public void onNegativeClick() {
+    public void onSubjectCancelClick() {
 
     }
 
     @Override
-    public void onNeutralClick() {
+    public void onSubjectEditClick() {
 
     }
 
     @Override
-    public void addToHistory(String subject, String timeElapsed) {
+    public void addToHistory(String subject, String timeElapsed, long startTimeMillis, long endTimeMillis) {
         Calendar calendar = Calendar.getInstance();
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
 
         String date = NewSessionActivity.DAYS[dayOfWeek];
         date += ", " + DateFormat.getDateInstance().format(new Date());
         String DBdate = getCurrentDBdate();
-        newHistoryEntry(subject, timeElapsed, date, DBdate, false);
+        newHistoryEntry(subject, timeElapsed, date, DBdate, false, startTimeMillis, endTimeMillis);
     }
 
     private String getCurrentDBdate(){
@@ -123,16 +128,28 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
             currentDate += Integer.toString(Calendar.getInstance().get(Calendar.MINUTE));
         }
 
+        if(Calendar.getInstance().get(Calendar.SECOND) < 10){
+            currentDate += "0" + Integer.toString(Calendar.getInstance().get(Calendar.SECOND));
+        }else{
+            currentDate += Integer.toString(Calendar.getInstance().get(Calendar.SECOND));
+        }
+
+
         return currentDate;
     }
 
-    private void newHistoryEntry(String subject, String timeElapsed, String date, String DBdate, boolean manuallyAdded){
+    private void newHistoryEntry(String subject, String timeElapsed,
+                                 String date, String DBdate, boolean manuallyAdded,
+                                 long startTimeMillis, long endTimeMillis){
         HistoryFragment listFrag = (HistoryFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getListTag());
         if(listFrag != null) {
             //Log.d("MainActivity", "listFrag is not null");
+            addHistoryToDataBase(subject, timeElapsed, DBdate, date, startTimeMillis, endTimeMillis);
             listFrag.addHistory(subject, timeElapsed, date, DBdate, manuallyAdded);
         }else{
            // Log.d("MainActivity", "listFrag is null");
+            addHistoryToDataBase(subject, timeElapsed, DBdate, date, startTimeMillis, endTimeMillis);
+
             HistoryFragment newFragment = new HistoryFragment();
 
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -140,7 +157,6 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
             transaction.commit();
             newFragment.addHistory(subject, timeElapsed, date, DBdate, manuallyAdded);
         }
-        addHistoryToDataBase(subject, timeElapsed, DBdate, date);
     }
 
     @Override
@@ -286,12 +302,9 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         myDB.insertSubjectRow(subject);
     }
 
-    public void addHistoryToDataBase(String subject, String time){
-        String date  = DateFormat.getDateInstance().format(new Date());
-       // myDB.insertHistoryRow(subject, time, date);
-    }
 
-    public void addHistoryToDataBase(String subject, String time, String date, String humanDate){
+
+    public void addHistoryToDataBase(String subject, String time, String date, String humanDate, long startTimeMillis, long endTimeMillis){
         myDB.insertHistoryRow(subject, time, date, humanDate);
     }
 
@@ -357,6 +370,21 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     public void onSaveInstanceState(Bundle savedInstanceState){
         savedInstanceState.putStringArray(SUBJECT_ARRAY, subjectArray);
         super.onSaveInstanceState(savedInstanceState);
+    }
+
+    @Override
+    public void onDeleteHistoryConfirmed() {
+        HistoryFragment listFrag = (HistoryFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getListTag());
+        if(listFrag != null) {
+            listFrag.deleteSession();
+        }else{
+            HistoryFragment newFragment = new HistoryFragment();
+
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.pager, newFragment);
+            transaction.commit();
+            newFragment.deleteSession();
+        }
     }
 }
 

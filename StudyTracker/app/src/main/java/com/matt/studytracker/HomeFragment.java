@@ -91,7 +91,7 @@ public class HomeFragment extends Fragment
     StopClicked mCallback;
 
     public interface StopClicked{
-         void addToHistory(String subject, String timeElapsed);
+         void addToHistory(String subject, String timeElapsed, long startTimeMillis, long endTimeMillis);
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -197,7 +197,7 @@ public class HomeFragment extends Fragment
                     Log.d("stoppedSubject", stoppedSubject);
                     Log.d("stopperTime", stoppedTime);
 
-                    mCallback.addToHistory(stoppedSubject, stoppedTime);
+                    mCallback.addToHistory(stoppedSubject, stoppedTime, startedAt, stoppedAt);
                     Animation animation = AnimationUtils.loadAnimation(getActivity(), R.anim.abc_fade_out);
                     animation.setDuration(500);
                     topView.startAnimation(animation);

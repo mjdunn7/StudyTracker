@@ -15,13 +15,27 @@ import java.util.Calendar;
 public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
     OnDateSetListener mListener;
 
+    public static final String TAG = "DatePickerFragment";
+    public static final String START_OR_END = "Start or end date";
+
+    private String startOrEnd;
+
     public interface OnDateSetListener{
-        void onDateChosen(int year, int month, int day);
+        void onDateChosen(int year, int month, int day, String qualifier);
+    }
+
+    @Override
+    public void setArguments(Bundle args) {
+        super.setArguments(args);
+        startOrEnd = args.getString(START_OR_END);
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // Use the current date as the default date in the picker
+        if(savedInstanceState != null){
+            startOrEnd = savedInstanceState.getString(START_OR_END);
+        }
         final Calendar c = Calendar.getInstance();
         int year = c.get(Calendar.YEAR);
         int month = c.get(Calendar.MONTH);
@@ -34,7 +48,7 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
 
     @Override
     public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
-        mListener.onDateChosen(i, i1, i2);
+        mListener.onDateChosen(i, i1, i2, startOrEnd);
     }
 
     @Override
@@ -43,7 +57,13 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
         try{
             mListener = (OnDateSetListener) activity;
         }catch (ClassCastException e){
-            throw new ClassCastException(activity.toString() + " must implement dialog listener");
+            throw new ClassCastException(activity.toString() + " must implement DatePickerDialog listener");
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(START_OR_END, startOrEnd);
     }
 }
