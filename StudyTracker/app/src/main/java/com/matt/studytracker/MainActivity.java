@@ -24,7 +24,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         HomeFragment.StopClicked,
         SubjectLongTappedDialog.DialogListener,
         DeleteSubjectConfirmDialog.DeleteSubjectDialogListener,
-        DeleteHistoryDialog.DeleteHistoryDialogListener{
+        DeleteHistoryDialog.DeleteHistoryDialogListener,
+        HistoryLongTappedDialog.DialogListener{
     public static final String SUBJECT_ARRAY = "main activity subject array";
 
     public DBAdapter myDB;
@@ -37,6 +38,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     private String[] subjectArray = {};
 
     private ServiceConnection mConnection;
+
+    private HistoryItem historyItemToBeEdited;
 
     String subjectToRemove;
     protected int indexToRemove;
@@ -90,14 +93,18 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     }
 
     @Override
-    public void addToHistory(String subject, String timeElapsed, String interval) {
+    public void addToHistory(String subject, String timeElapsed, String interval,
+                             int startYear, int startMonth, int startDay, int startHour, int startMinute,
+                             int endYear, int endMonth, int endDay, int endHour, int endMinute) {
         Calendar calendar = Calendar.getInstance();
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
 
         String date = NewSessionActivity.DAYS[dayOfWeek];
         date += ", " + DateFormat.getDateInstance().format(new Date());
         String DBdate = getCurrentDBdate();
-        newHistoryEntry(subject, timeElapsed, date, DBdate, false, interval);
+        newHistoryEntry(subject, timeElapsed, date, DBdate, false, interval, startYear,
+                startMonth, startDay, startHour, startMinute, endYear, endMonth, endDay,
+                endHour, endMinute);
     }
 
     private String getCurrentDBdate(){
@@ -138,24 +145,31 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         return currentDate;
     }
 
-    private void newHistoryEntry(String subject, String timeElapsed,
-                                 String date, String DBdate, boolean manuallyAdded,
-                                 String interval){
+    private void newHistoryEntry(String subject, String timeElapsed, String date, String DBdate, boolean manuallyAdded,
+                                 String interval, int startYear, int startMonth, int startDay, int startHour, int startMinute,
+                                 int endYear, int endMonth, int endDay, int endHour, int endMinute) {
         HistoryFragment listFrag = (HistoryFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getListTag());
         if(listFrag != null) {
             //Log.d("MainActivity", "listFrag is not null");
-            addHistoryToDataBase(subject, timeElapsed, DBdate, date, interval);
-            listFrag.addHistory(subject, timeElapsed, date, DBdate, manuallyAdded, interval);
+            addHistoryToDataBase(subject, timeElapsed, DBdate, date, interval, startYear, startMonth, startDay, startHour,
+                    startMinute, endYear, endMonth, endDay, endHour, endMinute);
+
+            listFrag.addHistory(subject, timeElapsed, date, DBdate, manuallyAdded, interval, startYear,
+                    startMonth, startDay, startHour, startMinute, endYear, endMonth, endDay,
+                    endHour, endMinute);
         }else{
            // Log.d("MainActivity", "listFrag is null");
-            addHistoryToDataBase(subject, timeElapsed, DBdate, date, interval);
+            addHistoryToDataBase(subject, timeElapsed, DBdate, date, interval, startYear, startMonth, startDay, startHour,
+                    startMinute, endYear, endMonth, endDay, endHour, endMinute);
 
             HistoryFragment newFragment = new HistoryFragment();
 
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.replace(R.id.pager, newFragment);
             transaction.commit();
-            newFragment.addHistory(subject, timeElapsed, date, DBdate, manuallyAdded, interval);
+            newFragment.addHistory(subject, timeElapsed, date, DBdate, manuallyAdded, interval, startYear,
+                    startMonth, startDay, startHour, startMinute, endYear, endMonth, endDay,
+                    endHour, endMinute);
         }
     }
 
@@ -225,7 +239,38 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     public void addSessionButton(View v){
         Intent intent = new Intent(MainActivity.this, NewSessionActivity.class);
         intent.putExtra(SUBJECT_ARRAY, subjectArray);
+        intent.putExtra(NewSessionActivity.IS_EDIT, false);
         MainActivity.this.startActivityForResult(intent, NewSessionActivity.ACTIVITY_ID);
+    }
+
+    public void editSessionActivityLaunch(HistoryItem history){
+        Intent intent = new Intent(MainActivity.this, NewSessionActivity.class);
+        intent.putExtra(SUBJECT_ARRAY, subjectArray);
+        intent.putExtra(NewSessionActivity.IS_EDIT, true);
+
+        intent.putExtra(NewSessionActivity.SUBJECT, history.getSubject());
+
+        intent.putExtra(NewSessionActivity.START_YEAR, history.getStartYear());
+        intent.putExtra(NewSessionActivity.START_MONTH, history.getStartMonth());
+        intent.putExtra(NewSessionActivity.START_DAY, history.getStartDay());
+        intent.putExtra(NewSessionActivity.START_HOUR, history.getStartHour());
+        intent.putExtra(NewSessionActivity.START_MINUTE, history.getStartMinute());
+
+        intent.putExtra(NewSessionActivity.END_YEAR, history.getEndYear());
+        intent.putExtra(NewSessionActivity.END_MONTH, history.getEndMonth());
+        intent.putExtra(NewSessionActivity.END_DAY, history.getEndDay());
+        intent.putExtra(NewSessionActivity.END_HOUR, history.getEndHour());
+        intent.putExtra(NewSessionActivity.END_MINUTE, history.getEndMinute());
+
+        intent.putExtra(NewSessionActivity.ELAPSED_TIME, history.getTimeElapsed());
+
+        intent.putExtra(NewSessionActivity.DB_ID, history.getDataBaseRowID());
+
+        MainActivity.this.startActivityForResult(intent, NewSessionActivity.ACTIVITY_ID);
+    }
+
+    public void setHistoryItemToBeEdited(HistoryItem history){
+        historyItemToBeEdited = history;
     }
 
     public void startTimerService(String subject){
@@ -237,12 +282,18 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         return timerService.timerRunning;
     }
 
-    public String serviceSubject(){
+    public String getServiceSubject(){
         return timerService.timedSubject;
     }
 
-    public long serviceTimeStarted(){
+    public String getServiceHumanStartTime(){ return timerService.humanStartTime; }
+
+    public long getServiceTimeStarted(){
         return timerService.startedAt;
+    }
+
+    public int[] getServiceStartTimesHolder(){
+        return timerService.getStartTimesHolder();
     }
 
 
@@ -282,10 +333,24 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
             String DBdate = data.getExtras().getString(NewSessionActivity.DATA_BASE_DATE);
             String time = data.getExtras().getString(NewSessionActivity.ELAPSED_TIME);
             String interval = data.getExtras().getString(NewSessionActivity.INTERVAL);
-
             String subject = data.getExtras().getString(NewSessionActivity.SUBJECT);
+            int startYear = data.getExtras().getInt(NewSessionActivity.START_YEAR);
+            int startMonth = data.getExtras().getInt(NewSessionActivity.START_MONTH);
+            int startDay = data.getExtras().getInt(NewSessionActivity.START_DAY);
+            int startHour = data.getExtras().getInt(NewSessionActivity.START_HOUR);
+            int startMinute = data.getExtras().getInt(NewSessionActivity.START_MINUTE);
+            int endYear = data.getExtras().getInt(NewSessionActivity.END_YEAR);
+            int endMonth = data.getExtras().getInt(NewSessionActivity.END_MONTH);
+            int endDay = data.getExtras().getInt(NewSessionActivity.END_DAY);
+            int endHour = data.getExtras().getInt(NewSessionActivity.END_HOUR);
+            int endMinute = data.getExtras().getInt(NewSessionActivity.END_MINUTE);
 
-            newHistoryEntry(subject, time, date, DBdate, true, interval);
+            if(data.getExtras().getBoolean(NewSessionActivity.IS_EDIT)){
+                myDB.deleteHistoryRow(data.getExtras().getInt(NewSessionActivity.DB_ID));
+            }
+
+            newHistoryEntry(subject, time, date, DBdate, true, interval, startYear, startMonth,
+                    startDay, startHour, startMinute, endYear, endMonth, endDay, endHour, endMinute);
         }
     }
 
@@ -295,8 +360,11 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
 
 
-    public void addHistoryToDataBase(String subject, String time, String date, String humanDate, String interval){
-       myDB.insertHistoryRow(subject, time, date, humanDate, interval);
+    public void addHistoryToDataBase(String subject, String time, String date, String humanDate, String interval,
+                                     int startYear, int startMonth, int startDay, int startHour, int startMinute,
+                                     int endYear, int endMonth, int endDay, int endHour, int endMinute) {
+       myDB.insertHistoryRow(subject, time, date, humanDate, interval, startYear, startMonth, startDay, startHour,
+               startMinute, endYear, endMonth, endDay, endHour, endMinute);
     }
 
     @Override
@@ -376,6 +444,22 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
             transaction.commit();
             newFragment.deleteSession();
         }
+    }
+
+    @Override
+    public void onHistoryDeleteClick() {
+        DeleteHistoryDialog dialog = new DeleteHistoryDialog();
+        dialog.show(getSupportFragmentManager(), DeleteHistoryDialog.TAG);
+    }
+
+    @Override
+    public void onHistoryCancelClick() {
+
+    }
+
+    @Override
+    public void onHistoryEditClick() {
+        editSessionActivityLaunch(historyItemToBeEdited);
     }
 }
 

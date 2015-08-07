@@ -28,6 +28,17 @@ public class DBAdapter {
     public static final int H_HUMAN_DATE_COLUMN = 3;
     public static final int H_TIME_ELAPSED_COLUMN = 4;
     public static final int H_TIME_INTERVALS_COLUMN = 5;
+    public static final int START_YEAR_COLUMN = 6;
+    public static final int START_MONTH_COLUMN = 7;
+    public static final int START_DAY_COLUMN = 8;
+    public static final int START_HOUR_COLUMN = 9;
+    public static final int START_MINUTE_COLUMN = 10;
+    public static final int END_YEAR_COLUMN = 11;
+    public static final int END_MONTH_COLUMN = 12;
+    public static final int END_DAY_COLUMN = 13;
+    public static final int END_HOUR_COLUMN = 14;
+    public static final int END_MINUTE_COLUMN = 15;
+
 
 
     //subject columns
@@ -39,11 +50,21 @@ public class DBAdapter {
     public static final String HISTORY_HUMAN_DATE = "human_readable_date";
     public static final String HISTORY_TIME_ELAPSED = "time";
     public static final String HISTORY_TIME_INTERVAL = "time_interval";
-
+    public static final String START_YEAR = "history_start_year";
+    public static final String START_MONTH = "history_start_month";
+    public static final String START_DAY = "history_start_day";
+    public static final String START_HOUR = "history_start_hour";
+    public static final String START_MINUTE = "history_start_minute";
+    public static final String END_YEAR = "history_end_year";
+    public static final String END_MONTH = "history_end_month";
+    public static final String END_DAY = "history_end_day";
+    public static final String END_HOUR = "history_end_hour";
+    public static final String END_MINUTE = "history_end_minute";
 
     public static final String[] ALL_SUBJECT_KEYS = new String[] {KEY_ROWID, KEY_SUBJECT};
     public static final String[] ALL_HISTORY_KEYS = new String[] {KEY_ROWID, HISTORY_SUBJECT, HISTORY_DATE,
-            HISTORY_HUMAN_DATE, HISTORY_TIME_ELAPSED, HISTORY_TIME_INTERVAL};
+            HISTORY_HUMAN_DATE, HISTORY_TIME_ELAPSED, HISTORY_TIME_INTERVAL, START_YEAR, START_MONTH, START_DAY,
+            START_HOUR, START_MINUTE, END_YEAR, END_MONTH, END_DAY, END_HOUR, END_MINUTE};
 
     // DB info: it's name, and the table we are using (just one).
     public static final String DATABASE_NAME = "MyDb";
@@ -69,9 +90,18 @@ public class DBAdapter {
                     + HISTORY_DATE + " text not null,"
                     + HISTORY_HUMAN_DATE + " text not null,"
                     + HISTORY_TIME_ELAPSED + " text not null,"
-                    + HISTORY_TIME_INTERVAL + " text not null"
+                    + HISTORY_TIME_INTERVAL + " text not null,"
+                    + START_YEAR + " integer not null,"
+                    + START_MONTH + " integer not null,"
+                    + START_DAY + " integer not null,"
+                    + START_HOUR + " integer not null,"
+                    + START_MINUTE + " integer not null,"
+                    + END_YEAR + " integer not null,"
+                    + END_MONTH + " integer not null,"
+                    + END_DAY + " integer not null,"
+                    + END_HOUR + " integer not null,"
+                    + END_MINUTE + " integer not null"
 
-                    // Rest  of creation:
                     + ");";
 
     // Context of application who uses us.
@@ -171,7 +201,9 @@ public class DBAdapter {
         return db.update(SUBJECT_TABLE, newValues, where, null) != 0;
     }
 
-    public long insertHistoryRow(String subject, String time, String date, String humanDate, String interval) {
+    public long insertHistoryRow(String subject, String time, String date, String humanDate, String interval,
+                                 int startYear, int startMonth, int startDay, int startHour, int startMinute,
+                                 int endYear, int endMonth, int endDay, int endHour, int endMinute) {
 
         // Create row's data:
         ContentValues initialValues = new ContentValues();
@@ -180,6 +212,16 @@ public class DBAdapter {
         initialValues.put(HISTORY_HUMAN_DATE, humanDate);
         initialValues.put(HISTORY_TIME_ELAPSED, time);
         initialValues.put(HISTORY_TIME_INTERVAL, interval);
+        initialValues.put(START_YEAR, startYear);
+        initialValues.put(START_MONTH, startMonth);
+        initialValues.put(START_DAY, startDay);
+        initialValues.put(START_HOUR, startHour);
+        initialValues.put(START_MINUTE, startMinute);
+        initialValues.put(END_YEAR, endYear);
+        initialValues.put(END_MONTH, endMonth);
+        initialValues.put(END_DAY, endDay);
+        initialValues.put(END_HOUR, endHour);
+        initialValues.put(END_MINUTE, endMinute);
 
         // Insert it into the database.
         return db.insert(HISTORY_TABLE, null, initialValues);
@@ -225,7 +267,9 @@ public class DBAdapter {
     }
 
     // Change an existing row to be equal to new data.
-    public boolean updateHistoryRow(long rowId, String subject, String time, String date, String humanDate) {
+    public boolean updateHistoryRow(long rowId, String subject, String time, String date, String humanDate, String interval,
+                                    int startYear, int startMonth, int startDay, int startHour, int startMinute,
+                                    int endYear, int endMonth, int endDay, int endHour, int endMinute) {
         String where = KEY_ROWID + "=" + rowId;
 
 		/*
@@ -239,6 +283,17 @@ public class DBAdapter {
         newValues.put(HISTORY_DATE, date);
         newValues.put(HISTORY_HUMAN_DATE, humanDate);
         newValues.put(HISTORY_TIME_ELAPSED, time);
+        newValues.put(HISTORY_TIME_INTERVAL, interval);
+        newValues.put(START_YEAR, startYear);
+        newValues.put(START_MONTH, startMonth);
+        newValues.put(START_DAY, startDay);
+        newValues.put(START_HOUR, startHour);
+        newValues.put(START_MINUTE, startMinute);
+        newValues.put(END_YEAR, endYear);
+        newValues.put(END_MONTH, endMonth);
+        newValues.put(END_DAY, endDay);
+        newValues.put(END_HOUR, endHour);
+        newValues.put(END_MINUTE, endMinute);
 
 
         // Insert it into the database.

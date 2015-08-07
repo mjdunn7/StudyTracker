@@ -31,6 +31,19 @@ public class HomeFragment extends Fragment
     static final String TIMER_RUNNING = "timerRunning";
     static final String START_TIME = "startTime";
     static final String SUBJECT_STRING = "subjectString";
+    static final String HUMAN_START_TIME = "human end time";
+
+    public static final String START_YEAR = "start year";
+    public static final String START_MONTH = "start month";
+    public static final String START_DAY = "start day";
+    public static final String START_HOUR = "start hour";
+    public static final String START_MINUTE = "start minute";
+
+    public static final String END_YEAR = "end year";
+    public static final String END_MONTH = "end month";
+    public static final String END_DAY = "end day";
+    public static final String END_HOUR = "end hour";
+    public static final String END_MINUTE = "end minute";
 
     public ArrayAdapter<String> homeListAdaptor;
     public String[] classArray = { };
@@ -64,7 +77,18 @@ public class HomeFragment extends Fragment
     protected boolean removeSubjectCalled = false;
 
     protected int viewID;
-    String subjectToBeRemoved;
+    protected String subjectToBeRemoved;
+
+    private int startYear;
+    private int startMonth;
+    private int startDay;
+    private int startHour;
+    private int startMinute;
+    private int endYear;
+    private int endMonth;
+    private int endDay;
+    private int endHour;
+    private int endMinute;
 
     public void newClass(String newClass)
     {
@@ -95,7 +119,9 @@ public class HomeFragment extends Fragment
     StopClicked mCallback;
 
     public interface StopClicked{
-         void addToHistory(String subject, String timeElapsed, String interval);
+         void addToHistory(String subject, String timeElapsed, String interval, int startYear,
+                           int startMonth, int startDay, int startHour, int startMinute,
+                           int endYear, int endMonth, int endDay, int endHour, int endMinute);
     }
 
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -108,14 +134,36 @@ public class HomeFragment extends Fragment
             timerRunning = savedInstanceState.getBoolean(TIMER_RUNNING);
             subjectString = savedInstanceState.getString(SUBJECT_STRING);
             startedAt = savedInstanceState.getLong(START_TIME);
+            startHumanTime = savedInstanceState.getString(HUMAN_START_TIME);
+
+            startYear = savedInstanceState.getInt(START_YEAR);
+            startMonth = savedInstanceState.getInt(START_MONTH);
+            startDay = savedInstanceState.getInt(START_DAY);
+            startHour = savedInstanceState.getInt(START_HOUR);
+            startMinute = savedInstanceState.getInt(START_MINUTE);
+
+            endYear = savedInstanceState.getInt(END_YEAR);
+            endMonth = savedInstanceState.getInt(END_MONTH);
+            endDay = savedInstanceState.getInt(END_DAY);
+            endHour = savedInstanceState.getInt(END_HOUR);
+            endMinute = savedInstanceState.getInt(END_MINUTE);
 
         }
 
         //Checks timer service, syncs if necessary
         if(((MainActivity)getActivity()).getTimerService() != null && ((MainActivity)getActivity()).serviceTiming() && savedInstanceState == null)  {
             timerRunning = true;
-            subjectString = ((MainActivity)getActivity()).serviceSubject();
-            startedAt = ((MainActivity)getActivity()).serviceTimeStarted();
+            subjectString = ((MainActivity)getActivity()).getServiceSubject();
+            startedAt = ((MainActivity)getActivity()).getServiceTimeStarted();
+            startHumanTime = ((MainActivity)getActivity()).getServiceHumanStartTime();
+
+            int[] tempStartTimes = ((MainActivity)getActivity()).getServiceStartTimesHolder();
+
+            startYear = tempStartTimes[0];
+            startMonth = tempStartTimes[1];
+            startDay = tempStartTimes[2];
+            startHour = tempStartTimes[3];
+            startMinute = tempStartTimes[4];
         }
 
         //Initializes adaptor
@@ -204,7 +252,15 @@ public class HomeFragment extends Fragment
 
                     String interval = startHumanTime + " - " + endHumanTime;
 
-                    mCallback.addToHistory(stoppedSubject, stoppedTime, interval);
+                    Calendar calendar = Calendar.getInstance();
+                    endYear = calendar.get(Calendar.YEAR);
+                    endMonth = calendar.get(Calendar.MONTH);
+                    endDay = calendar.get(Calendar.DAY_OF_MONTH);
+                    endHour = calendar.get(Calendar.HOUR_OF_DAY);
+                    endMinute = calendar.get(Calendar.MINUTE);
+
+                    mCallback.addToHistory(stoppedSubject, stoppedTime, interval, startYear, startMonth, startDay,
+                            startHour, startMinute, endYear, endMonth, endDay, endHour, endMinute);
 
                     Animation animation = AnimationUtils.loadAnimation(getActivity(), R.anim.abc_fade_out);
                     animation.setDuration(500);
@@ -261,6 +317,13 @@ public class HomeFragment extends Fragment
         int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
         int minute = Calendar.getInstance().get(Calendar.MINUTE);
         startHumanTime = getReadableTime(hour, minute);
+
+        Calendar calendar = Calendar.getInstance();
+        startYear = calendar.get(Calendar.YEAR);
+        startMonth = calendar.get(Calendar.MONTH);
+        startDay = calendar.get(Calendar.DAY_OF_MONTH);
+        startHour = calendar.get(Calendar.HOUR_OF_DAY);
+        startMinute = calendar.get(Calendar.MINUTE);
 
         timerRunning = true;
     }
@@ -371,6 +434,20 @@ public class HomeFragment extends Fragment
         savedInstanceState.putBoolean(TIMER_RUNNING, timerRunning);
         savedInstanceState.putLong(START_TIME, startedAt);
         savedInstanceState.putString(SUBJECT_STRING, subjectString);
+        savedInstanceState.putString(HUMAN_START_TIME, startHumanTime);
+
+        savedInstanceState.putInt(START_YEAR, startYear);
+        savedInstanceState.putInt(START_MONTH, startMonth);
+        savedInstanceState.putInt(START_DAY, startDay);
+        savedInstanceState.putInt(START_HOUR, startHour);
+        savedInstanceState.putInt(START_MINUTE, startMinute);
+
+        savedInstanceState.putInt(END_YEAR, endYear);
+        savedInstanceState.putInt(END_MONTH, endMonth);
+        savedInstanceState.putInt(END_DAY, endDay);
+        savedInstanceState.putInt(END_HOUR, endHour);
+        savedInstanceState.putInt(END_MINUTE, endMinute);
+
         super.onSaveInstanceState(savedInstanceState);
     }
 

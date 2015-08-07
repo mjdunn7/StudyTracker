@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,49 +24,57 @@ import java.util.List;
  * Created by matthewdunn on 7/27/15.
  */
 public class NewSessionActivity extends ActionBarActivity implements DatePickerFragment.OnDateSetListener, TimePickerFragment.OnTimeSetListener{
-    private String[] subjectArray = {};
-
-    private String startDate;
-    private String endDate;
-    private String dateDBform;
+    public static final int ACTIVITY_ID = 2;
 
     public static final String SUBJECT = "subject chosen for added session";
+    public static final String IS_EDIT = "activity was launched in order to edit a session";
     public static final String START_DATE = "start date chosen for added session";
     public static final String END_DATE = "end date chosen for added session";
-    public static final String START_HOUR = "start hour";
-    public static final String START_MINUTE = "start minute";
-    public static final String END_HOUR = "end hour";
-    public static final String END_MINUTE = "end minute";
+    public static final String DB_ID = "db id of edited session";
+
     public static final String DATA_BASE_DATE = "date formatted for database";
 
     public static final String ELAPSED_TIME = "elapsed time";
     public static final String INTERVAL = "time interval";
 
-    private String elapsedTime = "0:00:00";
+    public static final String START_YEAR = "start_year";
+    public static final String START_MONTH = "start_month";
+    public static final String START_DAY = "start_day";
+    public static final String START_HOUR = "start_hour";
+    public static final String START_MINUTE = "start_minute";
+
+    public static final String END_YEAR = "end_year";
+    public static final String END_MONTH = "end_month";
+    public static final String END_DAY = "end_day";
+    public static final String END_HOUR = "end_hour";
+    public static final String END_MINUTE = "end_minute";
 
     public static final String[] MONTHS = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
     public static final String[] DAYS = {"", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
-    public static final int ACTIVITY_ID = 2;
+    private String elapsedTime = "0:00:00";
+
+    private String[] subjectArray = {};
+
+    private String startDate;
+    private String endDate;
+    private String dateDBform;
+    private String  subject = "not given";
 
     private int startYear;
     private int startMonth;
     private int startDay;
+    private int startHour;
+    private int startMinute;
     private int endYear;
     private int endMonth;
     private int endDay;
+    private int endHour;
+    private int endMinute;
 
-    public static final String START_YEAR = "start year";
-    public static final String START_MONTH = "start month";
-    public static final String START_DAY = "start day";
-    public static final String END_YEAR = "end year";
-    public static final String END_MONTH = "end month";
-    public static final String END_DAY = "end day";
+    private  int dataBaseID;
 
-    private int startHour = 12;
-    private int startMinute = 0;
-    private int endHour = 12;
-    private int endMinute = 0;
+    private boolean isEdit = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,27 +82,62 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
 
         //preserves date if screen is flipped
         if(savedInstanceState != null){
+            subject = savedInstanceState.getString(SUBJECT);
             endDate = savedInstanceState.getString(END_DATE);
             startDate = savedInstanceState.getString(START_DATE);
             dateDBform = savedInstanceState.getString(DATA_BASE_DATE);
 
-            startHour = savedInstanceState.getInt(START_HOUR);
-            startMinute = savedInstanceState.getInt(START_MINUTE);
-            endHour = savedInstanceState.getInt(END_HOUR);
-            endMinute = savedInstanceState.getInt(END_MINUTE);
-
             startYear = savedInstanceState.getInt(START_YEAR);
             startMonth = savedInstanceState.getInt(START_MONTH);
             startDay = savedInstanceState.getInt(START_DAY);
+            startHour = savedInstanceState.getInt(START_HOUR);
+            startMinute = savedInstanceState.getInt(START_MINUTE);
 
             endYear = savedInstanceState.getInt(END_YEAR);
             endMonth = savedInstanceState.getInt(END_MONTH);
             endDay = savedInstanceState.getInt(END_DAY);
+            endHour = savedInstanceState.getInt(END_HOUR);
+            endMinute = savedInstanceState.getInt(END_MINUTE);
 
             elapsedTime = savedInstanceState.getString(ELAPSED_TIME);
 
-        }else {
+            isEdit = savedInstanceState.getBoolean(IS_EDIT);
 
+            dataBaseID = savedInstanceState.getInt(DB_ID);
+
+        }
+        //gets subject array passed from main activity, contains subject list
+        Intent intent = getIntent();
+        subjectArray = intent.getStringArrayExtra(MainActivity.SUBJECT_ARRAY);
+
+        //if the activity was launched to edit a session, populate the values with the initial session data
+        if(intent.getBooleanExtra(IS_EDIT, false) && savedInstanceState == null){
+            isEdit = true;
+
+            subject = intent.getExtras().getString(SUBJECT);
+
+            startYear = intent.getExtras().getInt(START_YEAR);
+            startMonth = intent.getExtras().getInt(START_MONTH);
+            startDay = intent.getExtras().getInt(START_DAY);
+            startHour = intent.getExtras().getInt(START_HOUR);
+            startMinute = intent.getExtras().getInt(START_MINUTE);
+
+            endYear = intent.getExtras().getInt(END_YEAR);
+            endMonth = intent.getExtras().getInt(END_MONTH);
+            endDay = intent.getExtras().getInt(END_DAY);
+            endHour = intent.getExtras().getInt(END_HOUR);
+            endMinute = intent.getExtras().getInt(END_MINUTE);
+
+            elapsedTime = intent.getExtras().getString(ELAPSED_TIME);
+
+            dateDBform = getGivenDBDate(endYear, endMonth, endDay, endHour, endMinute);
+
+            dataBaseID = intent.getIntExtra(DB_ID, 0);
+
+            startDate = getHumanDate(startYear, startMonth, startDay);
+            endDate = getHumanDate(endYear, endMonth, endDay);
+
+        } else{
             //otherwise, sets default start and end dates to current date
             Calendar calendar = Calendar.getInstance();
             int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
@@ -104,27 +146,20 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
             endDate = startDate;
 
             //set default start and end hours and minutes to current hour and minute
-            startHour = calendar.get(Calendar.HOUR_OF_DAY);
-            Log.d("NewSessionActivity", "startHour: " + Integer.toString(startHour));
-            startMinute = calendar.get(Calendar.MINUTE);
-
             startYear = calendar.get(Calendar.YEAR);
             startMonth = calendar.get(Calendar.MONTH);
             startDay = calendar.get(Calendar.DAY_OF_MONTH);
+            startHour = calendar.get(Calendar.HOUR_OF_DAY);
+            startMinute = calendar.get(Calendar.MINUTE);
 
             endYear = startYear;
             endMonth = startMonth;
             endDay = startDay;
-
             endHour = startHour;
             endMinute = startMinute;
 
             dateDBform = getCurrentDBDate();
         }
-
-        //gets subject array passed from main activity, contains subject list
-        Intent intent = getIntent();
-        subjectArray = intent.getStringArrayExtra(MainActivity.SUBJECT_ARRAY);
 
         setContentView(R.layout.activity_new_session);
         getSupportFragmentManager().beginTransaction()
@@ -174,6 +209,8 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
 
         Bundle bundle = new Bundle();
         bundle.putString(TimePickerFragment.START_OR_END, "start");
+        bundle.putInt(TimePickerFragment.HOUR, startHour);
+        bundle.putInt(TimePickerFragment.MINUTE, startMinute);
         timePickerFragment.setArguments(bundle);
 
         timePickerFragment.show(getSupportFragmentManager(), TimePickerFragment.TAG);
@@ -186,6 +223,8 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
 
         Bundle bundle = new Bundle();
         bundle.putString(TimePickerFragment.START_OR_END, "end");
+        bundle.putInt(TimePickerFragment.HOUR, endHour);
+        bundle.putInt(TimePickerFragment.MINUTE, endMinute);
         timePickerFragment.setArguments(bundle);
 
         timePickerFragment.show(getSupportFragmentManager(), TimePickerFragment.TAG);
@@ -196,6 +235,9 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
 
         Bundle bundle = new Bundle();
         bundle.putString(DatePickerFragment.START_OR_END, "start");
+        bundle.putInt(DatePickerFragment.YEAR, startYear);
+        bundle.putInt(DatePickerFragment.MONTH, startMonth);
+        bundle.putInt(DatePickerFragment.DAY, startDay);
         datePickerFragment.setArguments(bundle);
 
         datePickerFragment.show(getSupportFragmentManager(), DatePickerFragment.TAG);
@@ -206,6 +248,9 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
 
         Bundle bundle = new Bundle();
         bundle.putString(DatePickerFragment.START_OR_END, "end");
+        bundle.putInt(DatePickerFragment.YEAR, endYear);
+        bundle.putInt(DatePickerFragment.MONTH, endMonth);
+        bundle.putInt(DatePickerFragment.DAY, endDay);
         datePickerFragment.setArguments(bundle);
 
         datePickerFragment.show(getSupportFragmentManager(), DatePickerFragment.TAG);
@@ -224,7 +269,20 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
                 .putExtra(START_DATE, startDate)
                 .putExtra(END_DATE, endDate)
                 .putExtra(INTERVAL, getIntervalString())
-                .putExtra(DATA_BASE_DATE, dateDBform);
+                .putExtra(DATA_BASE_DATE, dateDBform)
+                .putExtra(START_YEAR, startYear)
+                .putExtra(START_MONTH, startMonth)
+                .putExtra(START_DAY, startDay)
+                .putExtra(START_HOUR, startHour)
+                .putExtra(START_MINUTE, startMinute)
+                .putExtra(END_YEAR, endYear)
+                .putExtra(END_MONTH, endMonth)
+                .putExtra(END_DAY, endDay)
+                .putExtra(END_HOUR, endHour)
+                .putExtra(END_MINUTE, endMinute)
+                .putExtra(IS_EDIT, isEdit)
+                .putExtra(DB_ID, dataBaseID);
+
 
         setResult(Activity.RESULT_OK, intent);
         finish();
@@ -291,8 +349,7 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
         return startTime;
     }
 
-    @Override
-    public void onDateChosen(int year, int month, int day, String qualifier) {
+    private String getHumanDate(int year, int month, int day){
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, day);
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
@@ -303,6 +360,13 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
         date += ", " + NewSessionActivity.MONTHS[month];
         date += " " + Integer.toString(day) + ",";
         date += " " + Integer.toString(year);
+
+        return date;
+    }
+
+    @Override
+    public void onDateChosen(int year, int month, int day, String qualifier) {
+        String date = getHumanDate(year, month, day);
 
         if(qualifier.equals("start")) {
             TextView startDateTextView = (TextView) findViewById(R.id.start_date);
@@ -406,18 +470,26 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
     public void onSaveInstanceState(Bundle savedInstanceState) {
         savedInstanceState.putString(END_DATE, endDate);
         savedInstanceState.putString(START_DATE, startDate);
-        savedInstanceState.putInt(START_HOUR, startHour);
-        savedInstanceState.putInt(START_MINUTE, startMinute);
-        savedInstanceState.putInt(END_HOUR, endHour);
-        savedInstanceState.putInt(END_MINUTE, endMinute);
         savedInstanceState.putString(DATA_BASE_DATE, dateDBform);
+
         savedInstanceState.putInt(START_YEAR, startYear);
         savedInstanceState.putInt(START_MONTH, startMonth);
         savedInstanceState.putInt(START_DAY, startDay);
+        savedInstanceState.putInt(START_HOUR, startHour);
+        savedInstanceState.putInt(START_MINUTE, startMinute);
+
         savedInstanceState.putInt(END_YEAR, endYear);
         savedInstanceState.putInt(END_MONTH, endMonth);
         savedInstanceState.putInt(END_DAY, endDay);
+        savedInstanceState.putInt(END_HOUR, endHour);
+        savedInstanceState.putInt(END_MINUTE, endMinute);
+
         savedInstanceState.putString(ELAPSED_TIME, elapsedTime);
+        savedInstanceState.putString(SUBJECT, subject);
+
+        savedInstanceState.putBoolean(IS_EDIT, isEdit);
+
+        savedInstanceState.putInt(DB_ID, dataBaseID);
     }
 
 
@@ -441,6 +513,15 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
 
             Spinner spinner = (Spinner) rootView.findViewById(R.id.subjects_spinner);
             spinner.setAdapter(subjectSelectionAdaptor);
+
+            String subject = ((NewSessionActivity)getActivity()).subject;
+            spinner.setSelection(0);
+            for(int i = 0; i < classList.size(); ++i){
+                if(subject.equals(classList.get(i))){
+                    spinner.setSelection(i);
+                    i = classList.size();
+                }
+            }
 
             //TODO: determine whether or not activity was started from editing or adding
 

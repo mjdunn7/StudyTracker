@@ -1,9 +1,8 @@
 package com.matt.studytracker;
 
 /**
- * Created by matthewdunn on 7/22/15.
+ * Created by matthewdunn on 8/6/15.
  */
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -14,52 +13,50 @@ import android.support.v4.app.DialogFragment;
 /**
  * Created by matthewdunn on 7/20/15.
  */
-public class SubjectLongTappedDialog extends DialogFragment {
+public class HistoryLongTappedDialog extends DialogFragment {
     DialogListener mListener;
-    public static final String SUBJECT_SELECTED = "long tapped subject selected";
-    private String title;
+    public static final String HISTORY_SELECTED = "long tapped history selected";
+    public static final String TAG = "HistoryLongTappedDialog";
 
     public interface DialogListener{
-        public void onSubjectDeleteClick();
-        public void onSubjectCancelClick();
-        public void onSubjectEditClick();
+        public void onHistoryDeleteClick();
+        public void onHistoryCancelClick();
+        public void onHistoryEditClick();
     }
 
     @Override
     public void setArguments(Bundle args) {
         super.setArguments(args);
-        title = args.getString(SUBJECT_SELECTED);
 
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         if(savedInstanceState != null){
-            title = savedInstanceState.getString(SUBJECT_SELECTED);
+
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
-        builder.setMessage("What would you like to do with this subject?");
+        builder.setTitle("Session Selected");
+        builder.setMessage("What would you like to do with this session?");
         builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                mListener.onSubjectDeleteClick();
+                mListener.onHistoryDeleteClick();
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                mListener.onSubjectCancelClick();
+                mListener.onHistoryCancelClick();
             }
         });
         builder.setNeutralButton("Edit", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                mListener.onSubjectEditClick();
+                mListener.onHistoryEditClick();
             }
         });
-        builder.setTitle(title);
 
         return builder.create();
     }
@@ -71,14 +68,14 @@ public class SubjectLongTappedDialog extends DialogFragment {
         try{
             mListener = (DialogListener) activity;
         }catch (ClassCastException e){
-            throw new ClassCastException(activity.toString() + " must implement subjectLongTapped dialog listener");
+            throw new ClassCastException(activity.toString() + " must implement historyLongTapped dialog listener");
         }
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putString(SUBJECT_SELECTED, title);
 
         super.onSaveInstanceState(outState);
     }
 }
+

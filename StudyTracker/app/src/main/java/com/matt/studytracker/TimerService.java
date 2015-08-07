@@ -11,6 +11,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
+import java.util.Calendar;
+
 public class TimerService extends Service {
     private static long UPDATE_EVERY = 200;
 
@@ -21,10 +23,12 @@ public class TimerService extends Service {
     protected long stoppedAt;
     protected Notification note;
     protected String timedSubject;
+    protected String humanStartTime;
 
     private final IBinder mBinder = new LocalBinder();
     private static final int NOTIFICATION_ID = 1;
     private Notification.Builder builder;
+    private int[] startTimesHolder = new int[5];
 
     public TimerService() {
     }
@@ -83,11 +87,19 @@ public class TimerService extends Service {
         timedSubject = subject;
         startForeground(NOTIFICATION_ID, getTimerNotification(subject, ""));
 
+        int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        int minute = Calendar.getInstance().get(Calendar.MINUTE);
+        humanStartTime = getReadableTime(hour, minute);
+
         timerInitiated();
         handler = new Handler();
         updateTimer = new UpdateTimer();
         handler.postDelayed(updateTimer, UPDATE_EVERY);
 
+    }
+
+    public int[] getStartTimesHolder(){
+        return startTimesHolder;
     }
 
     class UpdateTimer implements Runnable {
@@ -139,8 +151,42 @@ public class TimerService extends Service {
         updateNotification("Timer", display);
     }
 
+    private String getReadableTime(int hour, int minute){
+        String startTime;
+        if(hour <= 12){
+            startTime = Integer.toString(hour) + ":";
+            if(minute < 10){
+                startTime += "0" + Integer.toString(minute);
+            }else {
+                startTime += Integer.toString(minute);
+            }
+            if(hour == 12){
+                startTime += " PM";
+            }else {
+                startTime += " AM";
+            }
+        }else{
+            hour = hour - 12;
+            startTime = Integer.toString(hour) + ":";
+            if (minute < 10){
+                startTime += "0" + Integer.toString(minute);
+            }else {
+                startTime += Integer.toString(minute);
+            }
+            startTime += " PM";
+        }
+        return startTime;
+    }
+
     protected void timerInitiated(){
         startedAt = System.currentTimeMillis();
         timerRunning = true;
+
+        Calendar calendar = Calendar.getInstance();
+        startTimesHolder[0] = calendar.get(Calendar.YEAR);
+        startTimesHolder[1] = calendar.get(Calendar.MONTH);
+        startTimesHolder[2] = calendar.get(Calendar.DAY_OF_MONTH);
+        startTimesHolder[3] = calendar.get(Calendar.HOUR_OF_DAY);
+        startTimesHolder[4] = calendar.get(Calendar.MINUTE);
     }
 }

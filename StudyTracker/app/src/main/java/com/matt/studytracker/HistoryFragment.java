@@ -1,5 +1,6 @@
 package com.matt.studytracker;
 
+import android.app.Activity;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -48,9 +49,13 @@ public class HistoryFragment extends Fragment {
 
     protected Spinner spinner;
 
+    private addSessionListener mListener;
+
+    public interface addSessionListener{
+        void newSessionClicked(HistoryItem sessionSelected);
+    }
+
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-
-
         rootView = inflater.inflate(R.layout.history_fragment, container, false);
        // Log.d("HistoryFragment", "onCreateView");
 
@@ -96,20 +101,25 @@ public class HistoryFragment extends Fragment {
                 syncedWithDB = true;
             }
 
+        //for when history list item is long-tapped
         historyListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                 historyIndexToDelete = i;
-                DeleteHistoryDialog dialog = new DeleteHistoryDialog();
-                dialog.show(getFragmentManager(), DeleteHistoryDialog.TAG);
+
+                HistoryLongTappedDialog historyLongTappedDialog = new HistoryLongTappedDialog();
+                historyLongTappedDialog.show(getFragmentManager(), HistoryLongTappedDialog.TAG);
+
+                ((MainActivity) getActivity()).setHistoryItemToBeEdited(historyList.get(i));
+                //DeleteHistoryDialog dialog = new DeleteHistoryDialog();
+                //dialog.show(getFragmentManager(), DeleteHistoryDialog.TAG);
 
                 return true;
             }
         });
 
+
         return rootView;
-
-
     }
 
     public void deleteSession(){
@@ -141,6 +151,17 @@ public class HistoryFragment extends Fragment {
                 tempHistory.setDBdate(Long.parseLong(cursor.getString(DBAdapter.H_DATE_COLUMN)));
                 tempHistory.setDataBaseRowID(id);
                 tempHistory.setInterval(interval);
+
+                tempHistory.setStartYear(cursor.getInt(DBAdapter.START_YEAR_COLUMN));
+                tempHistory.setStartMonth(cursor.getInt(DBAdapter.START_MONTH_COLUMN));
+                tempHistory.setStartDay(cursor.getInt(DBAdapter.START_DAY_COLUMN));
+                tempHistory.setStartHour(cursor.getInt(DBAdapter.START_HOUR_COLUMN));
+                tempHistory.setStartMinute(cursor.getInt(DBAdapter.START_MINUTE_COLUMN));
+                tempHistory.setEndYear(cursor.getInt(DBAdapter.END_YEAR_COLUMN));
+                tempHistory.setEndMonth(cursor.getInt(DBAdapter.END_MONTH_COLUMN));
+                tempHistory.setEndDay(cursor.getInt(DBAdapter.END_DAY_COLUMN));
+                tempHistory.setEndHour(cursor.getInt(DBAdapter.END_HOUR_COLUMN));
+                tempHistory.setEndMinute(cursor.getInt(DBAdapter.END_MINUTE_COLUMN));
 
                 if(tempHistory.getDBdate() >= formattedTime) {
                     historyList.add(tempHistory);
@@ -206,7 +227,9 @@ public class HistoryFragment extends Fragment {
         return currentDate;
     }
 
-    public void addHistory(String subject, String timeElapsed, String date, String DBdate, boolean manuallyAdded, String interval) {
+    public void addHistory(String subject, String timeElapsed, String date, String DBdate, boolean manuallyAdded, String interval,
+                           int startYear, int startMonth, int startDay, int startHour, int startMinute,
+                           int endYear, int endMonth, int endDay, int endHour, int endMinute){
         stoppedSubject = subject;
         stoppedTime = timeElapsed;
 
@@ -217,6 +240,17 @@ public class HistoryFragment extends Fragment {
         history.setDate(date);
         history.setDBdate(Long.parseLong(DBdate));
         history.setInterval(interval);
+
+        history.setStartYear(startYear);
+        history.setStartMonth(startMonth);
+        history.setStartDay(startDay);
+        history.setStartHour(startHour);
+        history.setStartMinute(startMinute);
+        history.setEndYear(endYear);
+        history.setEndMonth(endMonth);
+        history.setEndDay(endDay);
+        history.setEndHour(endHour);
+        history.setEndMinute(endMinute);
 
         //To be executed if the user manually added the session
         if (manuallyAdded && historyAdaptor != null) {
@@ -231,6 +265,11 @@ public class HistoryFragment extends Fragment {
                 addHistoryCalled = false;
             }
         }
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
     }
 
     @Override

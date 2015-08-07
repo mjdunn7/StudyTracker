@@ -9,8 +9,6 @@ import android.support.v4.app.DialogFragment;
 import android.text.format.DateFormat;
 import android.widget.TimePicker;
 
-import java.util.Calendar;
-
 /**
  * Created by matthewdunn on 8/2/15.
  */
@@ -19,6 +17,11 @@ public class TimePickerFragment extends DialogFragment implements TimePickerDial
 
     public static final String TAG = "TimePickerFragment";
     public static final String START_OR_END = "Start or end time";
+    public static final String HOUR = "hour for time picker";
+    public static final String MINUTE = "minute for time picker";
+
+    private int hour;
+    private int minute;
 
     private String qualifier;
 
@@ -30,13 +33,14 @@ public class TimePickerFragment extends DialogFragment implements TimePickerDial
     public void setArguments(Bundle args) {
         super.setArguments(args);
         qualifier = args.getString(START_OR_END);
+        hour = args.getInt(HOUR);
+        minute = args.getInt(MINUTE);
     }
 
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-        int minute = Calendar.getInstance().get(Calendar.MINUTE);
+
         return new TimePickerDialog(getActivity(), this, hour, minute,
                 DateFormat.is24HourFormat(getActivity()));
 
