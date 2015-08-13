@@ -1,8 +1,10 @@
 package com.matt.studytracker;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -12,8 +14,8 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.Tab;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import java.text.DateFormat;
 import java.util.Calendar;
@@ -44,6 +46,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     String subjectToRemove;
     protected int indexToRemove;
 
+    protected boolean noSubjects = true;
+
     public TimerService getTimerService(){
         return timerService;
     }
@@ -60,10 +64,18 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     public void onDeleteSubjectConfirmed() {
         HomeFragment homeFrag = (HomeFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getHomeTag());
         if(homeFrag != null) {
-            //Log.d("MainActivity", "homeFrag is not null");
             homeFrag.removeSubject(indexToRemove);
+
+            //displays a message if last subject has been removed
+            TextView notifier = (TextView) findViewById(R.id.no_subjects_message);
+            if(homeFrag.classList.isEmpty()){
+                notifier.setVisibility(View.VISIBLE);
+                noSubjects = true;
+            }else {
+                notifier.setVisibility(View.GONE);
+                noSubjects = false;
+            }
         }else{
-            //Log.d("MainActivity", "homeFrag is null");
             HomeFragment newFragment = new HomeFragment();
 
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -73,6 +85,13 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
         }
         myDB.deleteSubjectRow(subjectToRemove);
+        myDB.deleteHistoryRows(subjectToRemove);
+
+        HistoryFragment listFrag = (HistoryFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getListTag());
+        if(listFrag != null) {
+            listFrag.populateListWithDB(listFrag.spinner.getSelectedItem().toString());
+
+        }
 
     }
 
@@ -233,14 +252,29 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
     public void addButtonClick(View v){
         Intent intent = new Intent(MainActivity.this, AddClass.class);
+        intent.putExtra(AddClass.IS_EDIT, "false");
         MainActivity.this.startActivityForResult(intent, AddClass.ACTIVITY_ID);
     }
 
     public void addSessionButton(View v){
-        Intent intent = new Intent(MainActivity.this, NewSessionActivity.class);
-        intent.putExtra(SUBJECT_ARRAY, subjectArray);
-        intent.putExtra(NewSessionActivity.IS_EDIT, false);
-        MainActivity.this.startActivityForResult(intent, NewSessionActivity.ACTIVITY_ID);
+        if(!noSubjects) {
+            Intent intent = new Intent(MainActivity.this, NewSessionActivity.class);
+            intent.putExtra(SUBJECT_ARRAY, subjectArray);
+            intent.putExtra(NewSessionActivity.IS_EDIT, false);
+            MainActivity.this.startActivityForResult(intent, NewSessionActivity.ACTIVITY_ID);
+        }else{
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("No Subjects Added");
+                builder.setMessage("No existing subjects to add a session for. To get started, tap the Add Subject button in the" +
+                        " Home Tab.");
+                builder.setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                    }
+                });
+
+                builder.create().show();
+        }
     }
 
     public void editSessionActivityLaunch(HistoryItem history){
@@ -308,22 +342,43 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
         //for when "add class" activity returns
         if(requestCode == AddClass.ACTIVITY_ID && resultCode == Activity.RESULT_OK) {
-            String className = data.getExtras().getString("class_name");
+
+            String className = data.getExtras().getString(AddClass.CLASS_NAME);
+            String creditHours;
+            if(data.getExtras().getBoolean(AddClass.IS_CHECKED)){
+                creditHours = "";
+            }else {
+                creditHours = Integer.toString(data.getExtras().getInt(AddClass.CREDIT_HOURS)) + " credits";
+            }
+            String difficulty = "Difficulty Rating: " + Integer.toString(data.getExtras().getInt(AddClass.DIFFICULTY_RATING));
+
+            //if the class name is not empty
             if (className.trim().length() > 0) {
                 HomeFragment homeFrag = (HomeFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getHomeTag());
                 if (homeFrag != null) {
-                    Log.d("MainActivity", "homeFrag is not null");
-                    homeFrag.newClass(className);
+                    //adds subject to ListView on Home Tab
+                    homeFrag.newClass(className, creditHours, difficulty);
+
+                    //displays a message if last subject has been removed
+                    TextView notifier = (TextView) findViewById(R.id.no_subjects_message);
+                    if(homeFrag.classList.isEmpty()){
+                        notifier.setVisibility(View.VISIBLE);
+                        noSubjects = true;
+                    }else {
+                        notifier.setVisibility(View.GONE);
+                        noSubjects = false;
+                    }
                 } else {
-                    Log.d("MainActivity", "homeFrag is null");
                     HomeFragment newFragment = new HomeFragment();
 
                     FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                     transaction.replace(R.id.pager, newFragment, mAdapter.getHomeTag());
                     transaction.commit();
-                    newFragment.newClass(className);
+
+                    //adds subject to ListView on Home Tab
+                    newFragment.newClass(className, creditHours, difficulty);
                 }
-                addSubjectToDataBase(className);
+                addSubjectToDataBase(className, creditHours, difficulty);
             }
         }
 
@@ -354,8 +409,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         }
     }
 
-    public void addSubjectToDataBase(String subject){
-        myDB.insertSubjectRow(subject);
+    public void addSubjectToDataBase(String subject, String creditHours, String difficultyRating){
+        myDB.insertSubjectRow(subject, creditHours, difficultyRating);
     }
 
 
@@ -386,7 +441,6 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     protected void onDestroy(){
         super.onDestroy();
         myDB.close();
-        Log.d("Main activity", "onDestroy");
     }
 
     @Override
@@ -400,7 +454,6 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         mConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-                Log.d("MainActivity", "onServiceConnected");
                 TimerService.LocalBinder binder = (TimerService.LocalBinder) iBinder;
                 timerService = binder.getService();
                 boundToTimer = true;
@@ -410,7 +463,6 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
             @Override
             public void onServiceDisconnected(ComponentName componentName) {
                 boundToTimer = false;
-                Log.d("MainActivity", "onServiceDisconnected");
             }
         };
 

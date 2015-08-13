@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TableLayout;
@@ -45,9 +44,9 @@ public class HomeFragment extends Fragment
     public static final String END_HOUR = "end hour";
     public static final String END_MINUTE = "end minute";
 
-    public ArrayAdapter<String> homeListAdaptor;
-    public String[] classArray = { };
-    public List<String> classList = new ArrayList<String>(Arrays.asList(classArray));
+    public SubjectListAdapter homeListAdaptor;
+    public Subject[] classArray = { };
+    public List<Subject> classList = new ArrayList<Subject>(Arrays.asList(classArray));
 
     protected TextView subject;
     protected TextView timer;
@@ -72,12 +71,12 @@ public class HomeFragment extends Fragment
     protected Handler handler;
     protected UpdateTimer updateTimer;
 
-    protected String addedClass;
+    protected Subject addedClass;
     protected boolean newClassCalled = false;
     protected boolean removeSubjectCalled = false;
 
     protected int viewID;
-    protected String subjectToBeRemoved;
+    protected Subject subjectToBeRemoved;
 
     private int startYear;
     private int startMonth;
@@ -90,15 +89,18 @@ public class HomeFragment extends Fragment
     private int endHour;
     private int endMinute;
 
-    public void newClass(String newClass)
+    public void newClass(String newClass, String creditHours, String difficulty)
     {
-        addedClass = newClass;
+        addedClass.setSubject(newClass);
+        addedClass.setCreditHours(creditHours);
+        addedClass.setDifficulty(difficulty);
         if (homeListAdaptor == null) {
             newClassCalled = true;
         } else{
-            homeListAdaptor.add(newClass);
+            homeListAdaptor.add(addedClass);
             newClassCalled = false;
             setSubjectArray();
+
         }
 
     }
@@ -113,7 +115,11 @@ public class HomeFragment extends Fragment
     }
 
     public void setSubjectArray(){
-        ((MainActivity) getActivity()).setSubjectArray(classList.toArray(new String[classList.size()]));
+        String[] subjectArray = new String[classList.size()];
+        for(int i = 0; i < classList.size(); ++i){
+            subjectArray[i] = classList.get(i).getSubject();
+        }
+        ((MainActivity) getActivity()).setSubjectArray(subjectArray);
     }
 
     StopClicked mCallback;
@@ -128,7 +134,8 @@ public class HomeFragment extends Fragment
     {
 
         final View rootView = inflater.inflate(R.layout.home_fragment, container, false);
-        Log.d("HomeFragment", "OnCreate");
+
+        addedClass = new Subject();
 
         if(savedInstanceState != null){
             timerRunning = savedInstanceState.getBoolean(TIMER_RUNNING);
@@ -193,8 +200,8 @@ public class HomeFragment extends Fragment
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 //Log.d("homeFragment", "list item tapped");
                 if(!timerRunning) {
-                    subjectString = homeListAdaptor.getItem(position);
-                    subject.setText(homeListAdaptor.getItem(position));
+                    subjectString = homeListAdaptor.getItem(position).getSubject();
+                    subject.setText(homeListAdaptor.getItem(position).getSubject());
 
                     timerInitiated();
                     handler = new Handler();
@@ -220,12 +227,12 @@ public class HomeFragment extends Fragment
                 Log.d("HomeFragment", "deleteClicked");
                 subjectToBeRemoved = homeListAdaptor.getItem(i);
                 ((MainActivity) getActivity()).indexToRemove = i;
-                ((MainActivity) getActivity()).subjectToRemove = subjectToBeRemoved;
+                ((MainActivity) getActivity()).subjectToRemove = subjectToBeRemoved.getSubject();
 
                 SubjectLongTappedDialog dialog = new SubjectLongTappedDialog();
 
                 Bundle args = new Bundle();
-                args.putString(SubjectLongTappedDialog.SUBJECT_SELECTED, subjectToBeRemoved);
+                args.putString(SubjectLongTappedDialog.SUBJECT_SELECTED, subjectToBeRemoved.getSubject());
                 dialog.setArguments(args);
 
                 dialog.show(getFragmentManager(), String.format("edit/delete subject"));
@@ -243,7 +250,28 @@ public class HomeFragment extends Fragment
                     handler = null;
                     stoppedAt = System.currentTimeMillis();
 
-                    stoppedTime = timer.getText().toString();
+                    String tempStoppedTime = timer.getText().toString();
+                    stoppedTime = "";
+
+                    boolean firstColonHit = false;
+
+                    for(int i = 0; i < tempStoppedTime.length(); ++i){
+
+                        if(tempStoppedTime.charAt(i) == ':' && firstColonHit == true){
+                            i = tempStoppedTime.length();
+                        }else if(tempStoppedTime.charAt(i) == ':' && firstColonHit == false){
+                            firstColonHit = true;
+                            stoppedTime += Character.toString(tempStoppedTime.charAt(i));
+                        }
+                        else{
+                            stoppedTime += Character.toString(tempStoppedTime.charAt(i));
+                        }
+
+
+
+                        Log.d("HomeFragment", "tempStoppedTime: " + tempStoppedTime);
+                        Log.d("HomeFragment", "stoppedTime: " + stoppedTime);
+                    }
                     stoppedSubject = subjectString;
 
                     int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
@@ -286,24 +314,58 @@ public class HomeFragment extends Fragment
             Cursor cursor = ((MainActivity) getActivity()).myDB.getAllSubjectRows();
             if (cursor.moveToFirst()) {
                 do {
-                    String subject = cursor.getString(1);
-                    homeListAdaptor.add(subject);
+                    String subject = cursor.getString(DBAdapter.SUBJECT_COLUMN);
+                    String creditHours = cursor.getString(DBAdapter.CREDIT_HOURS_COLUMN);
+                    String difficulty = cursor.getString(DBAdapter.DIFFICULTY_RATING_COLUMN);
+
+                    Subject subjectItem = new Subject();
+                    subjectItem.setSubject(subject);
+                    subjectItem.setCreditHours(creditHours);
+                    subjectItem.setDifficulty(difficulty);
+
+                    homeListAdaptor.add(subjectItem);
                 } while (cursor.moveToNext());
 
                 cursor.close();
 
             }
             syncedWithDB = true;
+
+        }
+
+        //displays a message if no subjects have been added
+        TextView notifier = (TextView) rootView.findViewById(R.id.no_subjects_message);
+        if(classList.isEmpty()){
+            notifier.setVisibility(View.VISIBLE);
+            ((MainActivity) getActivity()).noSubjects = true;
+        }else {
+            notifier.setVisibility(View.GONE);
+            ((MainActivity) getActivity()).noSubjects = false;
         }
 
         if(newClassCalled){
             homeListAdaptor.add(addedClass);
             newClassCalled = false;
+
+            //removes message saying that no subjects have been added if message exists
+            notifier = (TextView) rootView.findViewById(R.id.no_subjects_message);
+            notifier.setVisibility(View.GONE);
+            ((MainActivity) getActivity()).noSubjects = false;
         }
 
         if(removeSubjectCalled){
             homeListAdaptor.remove(subjectToBeRemoved);
             removeSubjectCalled = false;
+
+            //displays a message if last subject has been removed
+            notifier = (TextView) rootView.findViewById(R.id.no_subjects_message);
+            if(classList.isEmpty()){
+                notifier.setVisibility(View.VISIBLE);
+                ((MainActivity) getActivity()).noSubjects = true;
+            }else {
+                notifier.setVisibility(View.GONE);
+                ((MainActivity) getActivity()).noSubjects = false;
+            }
         }
 
         setSubjectArray();

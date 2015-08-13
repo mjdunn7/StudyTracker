@@ -1,44 +1,138 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#D3D3D3">
-
-    <TextView android:text="Please enter the class name:"
-        android:layout_height="wrap_content"
-        android:layout_width = "wrap_content"
-        android:textSize = "25sp"/>
-
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/className"
-        android:layout_alignParentTop="true"
-        android:imeActionLabel="Enter"
-        android:inputType="textCapWords"/>
-
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dip"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+android:layout_height="fill_parent"
+android:layout_width="fill_parent"
+android:orientation="vertical">
+    <ScrollView
+        android:layout_height="0dp"
+        android:layout_width="fill_parent"
+        android:fadeScrollbars="false"
         android:layout_weight="1"
-        android:gravity="center|bottom"
-        android:orientation="vertical" >
+        android:background= "#D3D3D3">
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical"
+            android:scrollbarAlwaysDrawVerticalTrack="true">
 
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Done"
-            android:id="@+id/done"
-            android:background="#33ACCC"
-            android:onClick="doneButtonPressed" />
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Enter the class name:"
+                android:layout_marginTop="5dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginBottom="5dp"
+                android:textSize="20sp"
+                android:textColor="#696969"
+                android:textStyle="italic" />
 
-    </LinearLayout>
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/className"
+                android:layout_alignParentTop="true"
+                android:imeActionLabel="Enter"
+                android:inputType="textCapWords"
+                android:layout_marginRight="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginBottom="5dp"/>
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Enter amount of credit hours:"
+                android:layout_marginTop="5dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginBottom="0dp"
+                android:textSize="20sp"
+                android:textColor="#696969"
+                android:textStyle="italic" />
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:weightSum="2">
+
+                <RelativeLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_weight="1">
+
+                    <NumberPicker
+                        android:id="@+id/credit_hours_picker"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+                        android:layout_marginRight="8dp"
+                        android:layout_alignParentRight="true"></NumberPicker>
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_weight="1">
+
+                    <CheckBox android:id="@+id/checkbox_na"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="N.A."
+                        android:onClick="onCheckboxClicked"
+                        android:checked="false"
+                        android:layout_alignParentLeft="true"
+                        android:layout_marginLeft="13dp"/>
+
+                </RelativeLayout>
+            </LinearLayout>
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Enter class difficulty rating (1 = Easy, 5 = Extremely Difficult):"
+                android:layout_marginTop="5dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginBottom="0dp"
+                android:textSize="20sp"
+                android:textColor="#696969"
+                android:textStyle="italic" />
+
+            <NumberPicker
+                android:id="@+id/difficulty_rating_picker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_gravity="center"> </NumberPicker>
+
+        </LinearLayout>
+    </ScrollView>
 
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Done"
+        android:id="@+id/done"
+        android:background="#33ACCC"
+        android:layout_gravity="center|bottom"
+        android:onClick="doneButtonPressed" />
 </LinearLayout>
 
 

@@ -8,6 +8,18 @@
     android:id="@+id/home_fragment"
     android:tag="home fragment">
 
+    <TextView
+        android:id="@+id/no_subjects_message"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:textAlignment="gravity"
+        android:textSize="25sp"
+        android:visibility="gone"
+        android:text="No subjects yet added. To get started, tap the Add Subject button below." />
+
     <TableLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

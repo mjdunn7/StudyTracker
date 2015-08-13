@@ -37,7 +37,30 @@
     <View
         android:layout_width="fill_parent"
         android:layout_height="1dp"
-        android:background="@android:color/darker_gray"/>
+        android:background="@android:color/darker_gray"
+        android:layout_marginLeft="2dp"
+        android:layout_marginRight="2dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#D3D3D3"
+        android:layout_marginLeft="2dp"
+        android:layout_marginRight="2dp">
+        <TextView
+            android:id="@+id/no_history_message"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textAlignment="gravity"
+            android:textSize="25sp"
+            android:text="No history to show for the selected time period"
+            android:background="#D3D3D3"/>
+
+    </LinearLayout>
+
 
     <ListView
         android:layout_width="match_parent"

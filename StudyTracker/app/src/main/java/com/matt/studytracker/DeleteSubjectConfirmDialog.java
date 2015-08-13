@@ -20,7 +20,8 @@ public class DeleteSubjectConfirmDialog extends DialogFragment{
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Warning");
-        builder.setMessage("Are you sure you want to delete this subject?");
+        builder.setMessage("Are you sure? Deleting will remove all recorded sessions corresponding to the subject," +
+                " and the subject will no longer be analyzed. ");
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {

@@ -13,16 +13,17 @@ import java.util.List;
 /**
  * Created by matthewdunn on 6/5/15.
  */
-public class SubjectListAdapter extends ArrayAdapter <String> {
-    private List<String> subjects;
+public class SubjectListAdapter extends ArrayAdapter <Subject> {
+    private List<Subject> subjects;
 
     public SubjectListAdapter(Context context, int resource) {
         super(context, resource);
     }
 
-    public SubjectListAdapter(Context context, int resource, int resource2, List<String> items) {
+
+    public SubjectListAdapter(Context context, int resource, int resource2, List<Subject> items) {
         super(context, resource, resource2, items);
-       subjects = items;
+        subjects = items;
     }
 
     @Override
@@ -39,7 +40,13 @@ public class SubjectListAdapter extends ArrayAdapter <String> {
         start.setImageResource(R.drawable.start);
 
         TextView subject = (TextView) v.findViewById(R.id.home_list_textview);
-        subject.setText(subjects.get(position));
+        subject.setText(subjects.get(position).getSubject());
+
+        TextView creditHours = (TextView) v.findViewById(R.id.credit_hours);
+        creditHours.setText(subjects.get(position).getCreditHours());
+
+        TextView difficulty = (TextView) v.findViewById(R.id.difficulty_rating);
+        difficulty.setText(subjects.get(position).getDifficulty());
 
         return v;
     }

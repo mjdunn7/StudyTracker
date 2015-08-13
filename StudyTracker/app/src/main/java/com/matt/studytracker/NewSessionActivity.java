@@ -52,7 +52,7 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
     public static final String[] MONTHS = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
     public static final String[] DAYS = {"", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
-    private String elapsedTime = "0:00:00";
+    private String elapsedTime = "0:00";
 
     private String[] subjectArray = {};
 
@@ -197,7 +197,6 @@ public class NewSessionActivity extends ActionBarActivity implements DatePickerF
         } else {
             elapsedTime += Integer.toString(minutes);
         }
-        elapsedTime += ":00";
 
         TextView textView = (TextView) findViewById(R.id.start_end_diff);
         textView.setText(elapsedTime);

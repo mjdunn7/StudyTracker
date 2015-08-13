@@ -11,6 +11,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -127,7 +128,7 @@ public class HistoryFragment extends Fragment {
         populateListWithDB(spinner.getSelectedItem().toString());
     }
 
-    private void populateListWithDB(String when){
+    public void populateListWithDB(String when){
         Cursor cursor = ((MainActivity)getActivity()).myDB.getAllHistoryRows();
         historyList.clear();
 
@@ -173,6 +174,13 @@ public class HistoryFragment extends Fragment {
             cursor.close();
         }
         historyAdaptor.notifyDataSetChanged();
+
+        TextView notifier = (TextView) rootView.findViewById(R.id.no_history_message);
+        if(historyList.isEmpty()){
+            notifier.setVisibility(View.VISIBLE);
+        }else {
+            notifier.setVisibility(View.GONE);
+        }
     }
 
     private long getFormattedPastTime(String when){

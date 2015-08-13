@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
-import android.util.Log;
 
 import java.util.Calendar;
 
@@ -70,7 +69,6 @@ public class TimerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d("TimerService", "onStart");
         //return super.onStartCommand(intent, flags, startId);
         return START_STICKY;
     }
@@ -78,7 +76,6 @@ public class TimerService extends Service {
     public void stop(){
         timerRunning = false;
         stopForeground(true);
-        Log.d("TimerService", "stop");
         //stopSelf();
     }
 
