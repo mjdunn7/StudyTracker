@@ -89,11 +89,16 @@ public class HomeFragment extends Fragment
     private int endHour;
     private int endMinute;
 
-    public void newClass(String newClass, String creditHours, String difficulty)
+    public void newClass(String newClass, String creditHours, String difficulty, int intCredits, int intDifficulty)
     {
+        addedClass = new Subject();
+
         addedClass.setSubject(newClass);
         addedClass.setCreditHours(creditHours);
         addedClass.setDifficulty(difficulty);
+        addedClass.setIntCredits(intCredits);
+        addedClass.setIntDifficulty(intDifficulty);
+
         if (homeListAdaptor == null) {
             newClassCalled = true;
         } else{
@@ -224,7 +229,6 @@ public class HomeFragment extends Fragment
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.d("HomeFragment", "deleteClicked");
                 subjectToBeRemoved = homeListAdaptor.getItem(i);
                 ((MainActivity) getActivity()).indexToRemove = i;
                 ((MainActivity) getActivity()).subjectToRemove = subjectToBeRemoved.getSubject();
@@ -233,6 +237,10 @@ public class HomeFragment extends Fragment
 
                 Bundle args = new Bundle();
                 args.putString(SubjectLongTappedDialog.SUBJECT_SELECTED, subjectToBeRemoved.getSubject());
+                args.putInt(SubjectLongTappedDialog.CREDIT_HOURS, subjectToBeRemoved.getIntCredits());
+                args.putInt(SubjectLongTappedDialog.DIFFICULTY_RATING, subjectToBeRemoved.getIntDifficulty());
+                args.putInt(SubjectLongTappedDialog.DATA_BASE_ID, subjectToBeRemoved.getDataBaseID());
+
                 dialog.setArguments(args);
 
                 dialog.show(getFragmentManager(), String.format("edit/delete subject"));
@@ -266,11 +274,6 @@ public class HomeFragment extends Fragment
                         else{
                             stoppedTime += Character.toString(tempStoppedTime.charAt(i));
                         }
-
-
-
-                        Log.d("HomeFragment", "tempStoppedTime: " + tempStoppedTime);
-                        Log.d("HomeFragment", "stoppedTime: " + stoppedTime);
                     }
                     stoppedSubject = subjectString;
 
@@ -311,24 +314,7 @@ public class HomeFragment extends Fragment
 
         //syncs with data base if not done so already
         if(!syncedWithDB) {
-            Cursor cursor = ((MainActivity) getActivity()).myDB.getAllSubjectRows();
-            if (cursor.moveToFirst()) {
-                do {
-                    String subject = cursor.getString(DBAdapter.SUBJECT_COLUMN);
-                    String creditHours = cursor.getString(DBAdapter.CREDIT_HOURS_COLUMN);
-                    String difficulty = cursor.getString(DBAdapter.DIFFICULTY_RATING_COLUMN);
-
-                    Subject subjectItem = new Subject();
-                    subjectItem.setSubject(subject);
-                    subjectItem.setCreditHours(creditHours);
-                    subjectItem.setDifficulty(difficulty);
-
-                    homeListAdaptor.add(subjectItem);
-                } while (cursor.moveToNext());
-
-                cursor.close();
-
-            }
+            populateListWithDB();
             syncedWithDB = true;
 
         }
@@ -371,6 +357,34 @@ public class HomeFragment extends Fragment
         setSubjectArray();
 
         return rootView;
+    }
+
+    public void populateListWithDB(){
+        Cursor cursor = ((MainActivity) getActivity()).myDB.getAllSubjectRows();
+        if (cursor.moveToFirst()) {
+            homeListAdaptor.clear();
+            do {
+                String subject = cursor.getString(DBAdapter.SUBJECT_COLUMN);
+                String creditHours = cursor.getString(DBAdapter.CREDIT_HOURS_COLUMN);
+                String difficulty = cursor.getString(DBAdapter.DIFFICULTY_RATING_COLUMN);
+
+                Subject subjectItem = new Subject();
+                subjectItem.setSubject(subject);
+                subjectItem.setCreditHours(creditHours);
+                subjectItem.setDifficulty(difficulty);
+
+                subjectItem.setIntDifficulty(cursor.getInt(DBAdapter.INT_DIFFICULTY_COLUMN));
+                subjectItem.setIntCredits(cursor.getInt(DBAdapter.INT_CREDIT_HOURS_COLUMN));
+
+                subjectItem.setDataBaseID(cursor.getInt(DBAdapter.ROW_ID_COLUMN));
+                Log.d("HomeFragment", "Data base id: " + Integer.toString(subjectItem.getDataBaseID()));
+
+                homeListAdaptor.add(subjectItem);
+            } while (cursor.moveToNext());
+
+            cursor.close();
+
+        }
     }
 
     public void timerInitiated(){

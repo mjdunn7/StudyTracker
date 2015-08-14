@@ -14,7 +14,9 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.Tab;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.View;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.text.DateFormat;
@@ -59,6 +61,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     public String[] getSubjectArray(){
         return subjectArray;
     }
+
+    private String oldSubject;
 
     @Override
     public void onDeleteSubjectConfirmed() {
@@ -107,8 +111,20 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     }
 
     @Override
-    public void onSubjectEditClick() {
+    public void onSubjectEditClick(String subjectName, int subjectCreditHours, int subjectDifficulty, int dataBaseID) {
+        oldSubject = subjectName;
 
+        Intent intent = new Intent(MainActivity.this, AddClass.class);
+
+        intent.putExtra(AddClass.IS_EDIT, true);
+        intent.putExtra(AddClass.CLASS_NAME, subjectName);
+        intent.putExtra(AddClass.CREDIT_HOURS, subjectCreditHours);
+        intent.putExtra(AddClass.DIFFICULTY_RATING, subjectDifficulty);
+        intent.putExtra(AddClass.DATA_BASE_ID, dataBaseID);
+
+        Log.d("MainActivity", "Data base id: " + Integer.toString(dataBaseID));
+
+        MainActivity.this.startActivityForResult(intent, AddClass.ACTIVITY_ID);
     }
 
     @Override
@@ -196,6 +212,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     protected void onCreate(Bundle savedInstanceState) {
         if(savedInstanceState != null){
             subjectArray = savedInstanceState.getStringArray(SUBJECT_ARRAY);
+            oldSubject = savedInstanceState.getString("OldSubject");
         }
 
         //Log.d("MainActivity", "onCreate");
@@ -345,40 +362,48 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
             String className = data.getExtras().getString(AddClass.CLASS_NAME);
             String creditHours;
+            int intCreditHours;
+            int intDifficulty;
             if(data.getExtras().getBoolean(AddClass.IS_CHECKED)){
                 creditHours = "";
+                intCreditHours = 0;
             }else {
                 creditHours = Integer.toString(data.getExtras().getInt(AddClass.CREDIT_HOURS)) + " credits";
+                intCreditHours = data.getExtras().getInt(AddClass.CREDIT_HOURS);
             }
-            String difficulty = "Difficulty Rating: " + Integer.toString(data.getExtras().getInt(AddClass.DIFFICULTY_RATING));
+            intDifficulty = data.getExtras().getInt(AddClass.DIFFICULTY_RATING);
+            String difficulty = "Difficulty Rating: " + Integer.toString(data.getExtras().getInt(AddClass.DIFFICULTY_RATING)) + "/5";
 
-            //if the class name is not empty
-            if (className.trim().length() > 0) {
-                HomeFragment homeFrag = (HomeFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getHomeTag());
-                if (homeFrag != null) {
-                    //adds subject to ListView on Home Tab
-                    homeFrag.newClass(className, creditHours, difficulty);
+            if(data.getExtras().getBoolean(AddClass.IS_EDIT)){
+                //
+                // myDB.deleteSubjectRow(data.getExtras().getString(AddClass.CLASS_NAME));
+                myDB.updateSubjectRow(data.getExtras().getInt(AddClass.DATA_BASE_ID),
+                        className, creditHours, difficulty, intCreditHours, intDifficulty);
+                myDB.updateHistoryRowsWithSubject(oldSubject, className);
+            }else {
+                addSubjectToDataBase(className, creditHours, difficulty, intCreditHours, intDifficulty);
+            }
 
-                    //displays a message if last subject has been removed
-                    TextView notifier = (TextView) findViewById(R.id.no_subjects_message);
-                    if(homeFrag.classList.isEmpty()){
-                        notifier.setVisibility(View.VISIBLE);
-                        noSubjects = true;
-                    }else {
-                        notifier.setVisibility(View.GONE);
-                        noSubjects = false;
-                    }
-                } else {
-                    HomeFragment newFragment = new HomeFragment();
+            HomeFragment homeFrag = (HomeFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getHomeTag());
+            if (homeFrag != null) {
+                //adds subject to ListView on Home Tab
+                homeFrag.populateListWithDB();
 
-                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                    transaction.replace(R.id.pager, newFragment, mAdapter.getHomeTag());
-                    transaction.commit();
-
-                    //adds subject to ListView on Home Tab
-                    newFragment.newClass(className, creditHours, difficulty);
+                //displays a message if last subject has been removed
+                TextView notifier = (TextView) findViewById(R.id.no_subjects_message);
+                if(homeFrag.classList.isEmpty()){
+                    notifier.setVisibility(View.VISIBLE);
+                    noSubjects = true;
+                }else {
+                    notifier.setVisibility(View.GONE);
+                    noSubjects = false;
                 }
-                addSubjectToDataBase(className, creditHours, difficulty);
+            }
+
+            HistoryFragment listFrag = (HistoryFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getListTag());
+            if(listFrag != null) {
+                Spinner spinner = (Spinner) findViewById(R.id.time_frame_spinner);
+                listFrag.populateListWithDB(spinner.getSelectedItem().toString());
             }
         }
 
@@ -409,8 +434,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         }
     }
 
-    public void addSubjectToDataBase(String subject, String creditHours, String difficultyRating){
-        myDB.insertSubjectRow(subject, creditHours, difficultyRating);
+    public void addSubjectToDataBase(String subject, String creditHours, String difficultyRating, int intCredits, int intDifficulty){
+        myDB.insertSubjectRow(subject, creditHours, difficultyRating, intCredits, intDifficulty);
     }
 
 
@@ -480,6 +505,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState){
         savedInstanceState.putStringArray(SUBJECT_ARRAY, subjectArray);
+        savedInstanceState.putString("oldSubject", oldSubject);
         super.onSaveInstanceState(savedInstanceState);
     }
 

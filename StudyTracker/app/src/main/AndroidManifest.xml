@@ -21,7 +21,8 @@
         <activity
             android:name=".AddClass"
             android:label="@string/title_activity_add_class"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName=".MainActivity"
+            android:windowSoftInputMode="adjustPan">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="MainActivity" />

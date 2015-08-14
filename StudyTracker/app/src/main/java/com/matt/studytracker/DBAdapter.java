@@ -25,6 +25,8 @@ public class DBAdapter {
     public static final int SUBJECT_COLUMN = 1;
     public static final int CREDIT_HOURS_COLUMN = 2;
     public static final int DIFFICULTY_RATING_COLUMN = 3;
+    public static final int INT_CREDIT_HOURS_COLUMN = 4;
+    public static final int INT_DIFFICULTY_COLUMN = 5;
 
     public static final int ROW_ID_COLUMN = 0;
     public static final int H_SUBJECT_COLUMN = 1;
@@ -49,6 +51,8 @@ public class DBAdapter {
     public static final String KEY_SUBJECT = "subject";
     public static final String CREDIT_HOURS = "credit_hours";
     public static final String DIFFICULTY_RATING = "difficulty_rating";
+    public static final String INT_CREDIT_HOURS = "int_credit_hours";
+    public static final String INT_DIFFICULTY = "int_difficulty_rating";
 
     //history columns
     public static final String HISTORY_SUBJECT = "historySubject";
@@ -67,7 +71,8 @@ public class DBAdapter {
     public static final String END_HOUR = "history_end_hour";
     public static final String END_MINUTE = "history_end_minute";
 
-    public static final String[] ALL_SUBJECT_KEYS = new String[] {KEY_ROWID, KEY_SUBJECT, CREDIT_HOURS, DIFFICULTY_RATING};
+    public static final String[] ALL_SUBJECT_KEYS = new String[] {KEY_ROWID, KEY_SUBJECT, CREDIT_HOURS, DIFFICULTY_RATING,
+            INT_CREDIT_HOURS, INT_DIFFICULTY,};
     public static final String[] ALL_HISTORY_KEYS = new String[] {KEY_ROWID, HISTORY_SUBJECT, HISTORY_DATE,
             HISTORY_HUMAN_DATE, HISTORY_TIME_ELAPSED, HISTORY_TIME_INTERVAL, START_YEAR, START_MONTH, START_DAY,
             START_HOUR, START_MINUTE, END_YEAR, END_MONTH, END_DAY, END_HOUR, END_MINUTE};
@@ -85,7 +90,9 @@ public class DBAdapter {
 
                     + KEY_SUBJECT + " text not null,"
                     + CREDIT_HOURS + " text not null,"
-                    + DIFFICULTY_RATING + " text not null"
+                    + DIFFICULTY_RATING + " text not null,"
+                    + INT_CREDIT_HOURS + " integer not null,"
+                    + INT_DIFFICULTY + " integer not null"
 
                     // Rest  of creation:
                     + ");";
@@ -139,7 +146,7 @@ public class DBAdapter {
     }
 
     // Add a new set of values to the database.
-    public long insertSubjectRow(String subject, String creditHours, String difficultyRating) {
+    public long insertSubjectRow(String subject, String creditHours, String difficultyRating, int intCredits, int intDifficulty) {
 
         // TODO: Update data in the row with new fields.
         // TODO: Also change the function's arguments to be what you need!
@@ -148,6 +155,8 @@ public class DBAdapter {
         initialValues.put(KEY_SUBJECT, subject);
         initialValues.put(CREDIT_HOURS, creditHours);
         initialValues.put(DIFFICULTY_RATING, difficultyRating);
+        initialValues.put(INT_CREDIT_HOURS, intCredits);
+        initialValues.put(INT_DIFFICULTY, intDifficulty);
 
 
         // Insert it into the database.
@@ -156,7 +165,6 @@ public class DBAdapter {
 
     // Delete a row from the database, by rowId (primary key)
     public boolean deleteSubjectRow(String subject) {
-        Log.d("DBAdapter", "deleteSubjectRowCalled");
         String where = KEY_SUBJECT + "=?"; //+ rowId;
         return db.delete(SUBJECT_TABLE, where, new String[] {String.valueOf(subject)}) > 0;
     }
@@ -195,7 +203,7 @@ public class DBAdapter {
     }
 
     // Change an existing row to be equal to new data.
-    public boolean updateSubjectRow(long rowId, String subject) {
+    public boolean updateSubjectRow(long rowId, String subject, String credits, String difficulty, int intCredits, int intDifficulty) {
         String where = KEY_ROWID + "=" + rowId;
 
         // TODO: Update data in the row with new fields.
@@ -203,6 +211,10 @@ public class DBAdapter {
         // Create row's data:
         ContentValues newValues = new ContentValues();
         newValues.put(KEY_SUBJECT, subject);
+        newValues.put(CREDIT_HOURS, credits);
+        newValues.put(DIFFICULTY_RATING, difficulty);
+        newValues.put(INT_CREDIT_HOURS, intCredits);
+        newValues.put(INT_DIFFICULTY, difficulty);
 
         // Insert it into the database.
         return db.update(SUBJECT_TABLE, newValues, where, null) != 0;
@@ -280,37 +292,29 @@ public class DBAdapter {
     }
 
     // Change an existing row to be equal to new data.
-    public boolean updateHistoryRow(long rowId, String subject, String time, String date, String humanDate, String interval,
-                                    int startYear, int startMonth, int startDay, int startHour, int startMinute,
-                                    int endYear, int endMonth, int endDay, int endHour, int endMinute) {
+    public boolean updateHistoryRow(int rowId, String newSubject) {
         String where = KEY_ROWID + "=" + rowId;
 
-		/*
-		 * CHANGE 4:
-		 */
         // TODO: Update data in the row with new fields.
         // TODO: Also change the function's arguments to be what you need!
         // Create row's data:
         ContentValues newValues = new ContentValues();
-        newValues.put(HISTORY_SUBJECT, subject);
-        newValues.put(HISTORY_DATE, date);
-        newValues.put(HISTORY_HUMAN_DATE, humanDate);
-        newValues.put(HISTORY_TIME_ELAPSED, time);
-        newValues.put(HISTORY_TIME_INTERVAL, interval);
-        newValues.put(START_YEAR, startYear);
-        newValues.put(START_MONTH, startMonth);
-        newValues.put(START_DAY, startDay);
-        newValues.put(START_HOUR, startHour);
-        newValues.put(START_MINUTE, startMinute);
-        newValues.put(END_YEAR, endYear);
-        newValues.put(END_MONTH, endMonth);
-        newValues.put(END_DAY, endDay);
-        newValues.put(END_HOUR, endHour);
-        newValues.put(END_MINUTE, endMinute);
+        newValues.put(HISTORY_SUBJECT, newSubject);
 
 
         // Insert it into the database.
         return db.update(HISTORY_TABLE, newValues, where, null) != 0;
+    }
+
+    public void updateHistoryRowsWithSubject(String oldSubject, String newSubject){
+        Cursor cursor = getAllHistoryRows();
+        if(cursor.moveToFirst()){
+            do{
+                if(cursor.getString(H_SUBJECT_COLUMN).equals(oldSubject)){
+                    updateHistoryRow(cursor.getInt(ROW_ID_COLUMN), newSubject);
+                }
+            }while(cursor.moveToNext());
+        }
     }
 
 

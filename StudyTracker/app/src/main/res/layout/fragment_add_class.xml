@@ -3,13 +3,15 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 android:layout_height="fill_parent"
 android:layout_width="fill_parent"
-android:orientation="vertical">
+android:orientation="vertical" >
     <ScrollView
-        android:layout_height="0dp"
+        android:layout_height="fill_parent"
         android:layout_width="fill_parent"
         android:fadeScrollbars="false"
         android:layout_weight="1"
-        android:background= "#D3D3D3">
+        android:background= "#D3D3D3"
+        android:isScrollContainer="false" >
+
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:orientation="vertical"
             android:layout_width="fill_parent"
@@ -131,7 +133,6 @@ android:orientation="vertical">
         android:text="Done"
         android:id="@+id/done"
         android:background="#33ACCC"
-        android:layout_gravity="center|bottom"
         android:onClick="doneButtonPressed" />
 </LinearLayout>
 
