@@ -136,48 +136,11 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
         String date = NewSessionActivity.DAYS[dayOfWeek];
         date += ", " + DateFormat.getDateInstance().format(new Date());
-        String DBdate = getCurrentDBdate();
+        DBTimeHelper helper = new DBTimeHelper();
+        String DBdate = helper.getCurrentDBdate();
         newHistoryEntry(subject, timeElapsed, date, DBdate, false, interval, startYear,
                 startMonth, startDay, startHour, startMinute, endYear, endMonth, endDay,
                 endHour, endMinute);
-    }
-
-    private String getCurrentDBdate(){
-        String currentDate;
-        currentDate = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
-
-        if(Calendar.getInstance().get(Calendar.MONTH) < 10){
-            currentDate += "0" + Integer.toString(Calendar.getInstance().get(Calendar.MONTH));
-        }else {
-            currentDate += Integer.toString(Calendar.getInstance().get(Calendar.MONTH));
-        }
-
-        if(Calendar.getInstance().get(Calendar.DAY_OF_MONTH) < 10){
-            currentDate += "0" + Integer.toString(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
-        }else {
-            currentDate += Integer.toString(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
-        }
-
-        if (Calendar.getInstance().get(Calendar.HOUR_OF_DAY) < 10){
-            currentDate += "0" + Integer.toString(Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
-        }else{
-            currentDate += Integer.toString(Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
-        }
-
-        if(Calendar.getInstance().get(Calendar.MINUTE) < 10){
-            currentDate += "0" + Integer.toString(Calendar.getInstance().get(Calendar.MINUTE));
-        }else{
-            currentDate += Integer.toString(Calendar.getInstance().get(Calendar.MINUTE));
-        }
-
-        if(Calendar.getInstance().get(Calendar.SECOND) < 10){
-            currentDate += "0" + Integer.toString(Calendar.getInstance().get(Calendar.SECOND));
-        }else{
-            currentDate += Integer.toString(Calendar.getInstance().get(Calendar.SECOND));
-        }
-
-
-        return currentDate;
     }
 
     private void newHistoryEntry(String subject, String timeElapsed, String date, String DBdate, boolean manuallyAdded,
@@ -538,6 +501,13 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     @Override
     public void onHistoryEditClick() {
         editSessionActivityLaunch(historyItemToBeEdited);
+    }
+
+    public void upDatePieChart(){
+        ChartFragment chartFrag = (ChartFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getChartTag());
+        if(chartFrag != null) {
+            chartFrag.updatePieChart();
+        }
     }
 }
 

@@ -279,7 +279,8 @@ public class HomeFragment extends Fragment
 
                     int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
                     int minute = Calendar.getInstance().get(Calendar.MINUTE);
-                    endHumanTime = getReadableTime(hour, minute);
+                    DBTimeHelper helper = new DBTimeHelper();
+                    endHumanTime = helper.getReadableTime(hour, minute);
 
                     String interval = startHumanTime + " - " + endHumanTime;
 
@@ -392,7 +393,8 @@ public class HomeFragment extends Fragment
 
         int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
         int minute = Calendar.getInstance().get(Calendar.MINUTE);
-        startHumanTime = getReadableTime(hour, minute);
+        DBTimeHelper helper = new DBTimeHelper();
+        startHumanTime = helper.getReadableTime(hour, minute);
 
         Calendar calendar = Calendar.getInstance();
         startYear = calendar.get(Calendar.YEAR);
@@ -404,32 +406,7 @@ public class HomeFragment extends Fragment
         timerRunning = true;
     }
 
-    private String getReadableTime(int hour, int minute){
-        String startTime;
-        if(hour <= 12){
-            startTime = Integer.toString(hour) + ":";
-            if(minute < 10){
-                startTime += "0" + Integer.toString(minute);
-            }else {
-                startTime += Integer.toString(minute);
-            }
-            if(hour == 12){
-                startTime += " PM";
-            }else {
-                startTime += " AM";
-            }
-        }else{
-            hour = hour - 12;
-            startTime = Integer.toString(hour) + ":";
-            if (minute < 10){
-                startTime += "0" + Integer.toString(minute);
-            }else {
-                startTime += Integer.toString(minute);
-            }
-            startTime += " PM";
-        }
-        return startTime;
-    }
+
 
     protected void setTimeDisplay(){
         String display;

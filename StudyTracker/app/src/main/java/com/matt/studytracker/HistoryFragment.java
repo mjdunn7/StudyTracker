@@ -15,7 +15,6 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -135,7 +134,8 @@ public class HistoryFragment extends Fragment {
         if (cursor.moveToFirst()) {
             historyAdaptor.notifyDataSetChanged();
 
-            long formattedTime = getFormattedPastTime(when);
+            DBTimeHelper helper = new DBTimeHelper();
+            long formattedTime = helper.getFormattedPastTime(when);
             HistoryItem tempHistory;
             do {
 
@@ -181,58 +181,8 @@ public class HistoryFragment extends Fragment {
         }else {
             notifier.setVisibility(View.GONE);
         }
-    }
 
-    private long getFormattedPastTime(String when){
-
-        Calendar calendar = Calendar.getInstance();
-        long time = 0;
-
-        if(when.equals("Day")){
-            calendar.add(Calendar.DAY_OF_YEAR, -1);
-            time = Long.parseLong(getFormattedDate(calendar));
-        }
-
-        if(when.equals("Week")){
-            calendar.add(Calendar.DAY_OF_YEAR, -7);
-            time = Long.parseLong(getFormattedDate(calendar));
-        }
-
-        if(when.equals("Month")){
-            calendar.add(Calendar.MONTH, -1);
-            time = Long.parseLong(getFormattedDate(calendar));
-        }
-
-        if(when.equals("Six Months")){
-            calendar.add(Calendar.MONTH, -6);
-            time = Long.parseLong(getFormattedDate(calendar));
-        }
-
-        if(when.equals("All Time")){
-            time = 0;
-        }
-
-        return time;
-    }
-
-    private String getFormattedDate(Calendar calendar){
-        String currentDate;
-        currentDate = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
-
-        if(calendar.get(Calendar.MONTH) < 10){
-            currentDate += "0" + calendar.get(Calendar.MONTH);
-        }else {
-            currentDate += Integer.toString(calendar.get(Calendar.MONTH));
-        }
-
-        if(calendar.get(Calendar.DAY_OF_MONTH) < 10){
-            currentDate += "0" + Integer.toString(calendar.get(Calendar.DAY_OF_MONTH));
-        }else {
-            currentDate += Integer.toString(calendar.get(Calendar.DAY_OF_MONTH));
-        }
-
-        currentDate += "235900";
-        return currentDate;
+        ((MainActivity) getActivity()).upDatePieChart();
     }
 
     public void addHistory(String subject, String timeElapsed, String date, String DBdate, boolean manuallyAdded, String interval,
