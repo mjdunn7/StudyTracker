@@ -1,58 +1,203 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#D3D3D3"
-    android:tag="chart_fragment"
-    android:id="@+id/chartLayout">
 
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="0dp"
+    android:layout_width="fill_parent"
+    android:fadeScrollbars="false"
+    android:background= "#D3D3D3">
 
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:textSize="20sp"
-        android:textColor="#000000"
-        android:text="Study Time Allocation Breakdown"
-        android:layout_marginLeft="10dp"
-        android:layout_marginTop="3dp"
-        android:id="@+id/chart_title" />
-
-    <View
-        android:layout_width="fill_parent"
-        android:layout_height="1dp"
-        android:background="@android:color/darker_gray" />
-
-    <TableLayout
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:orientation="horizontal"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
         android:background="#D3D3D3"
-        android:gravity="center_vertical">
+        android:tag="chart_fragment"
+        android:id="@+id/chartLayout">
 
-        <TableRow
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:background="#D3D3D3"
             android:gravity="center_vertical">
-            <TextView
-                android:layout_width="wrap_content"
+
+            <TableRow
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Analyzing past:  "
+                    android:textColor="#000000"
+                    android:textSize="20dp"
+                    android:layout_marginLeft="10dp"/>
+
+                <Spinner
+                    android:id="@+id/percent_time_frame_spinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="10dp"/>
+            </TableRow>
+
+        </TableLayout>
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textColor="#000000"
+            android:text="Study Time Allocation Breakdown"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="3dp"
+            android:id="@+id/chart_title" />
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray" />
+
+
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/pieChart"
+            android:layout_height= "328dp"
+            android:layout_width= "fill_parent"
+            android:adjustViewBounds="true"/>
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textColor="#000000"
+            android:text="Total Hours Spent By Subject"
+            android:layout_marginLeft="10dp" />
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray" />
+
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+            <RelativeLayout
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="Analyzing past:  "
-                android:textColor="#000000"
-                android:textSize="20dp"
-                android:layout_marginLeft="10dp"/>
+                android:layout_weight="1">
 
-            <Spinner
-                android:id="@+id/percent_time_frame_spinner"
-                android:layout_width="wrap_content"
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:layout_gravity="center"
+                    android:textSize="20sp"
+                    android:textColor="#000000"
+                    android:id="@+id/hours_breakdown_subjects"
+                    android:gravity="right"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="3dp"/>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="10dp"/>
-        </TableRow>
+                android:layout_weight="1">
 
-    </TableLayout>
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:layout_gravity="center"
+                    android:textSize="20sp"
+                    android:textColor="#000000"
+                    android:id="@+id/hours_breakdown_hours"
+                    android:gravity="left"
+                    android:layout_marginLeft="3dp"
+                    android:layout_alignParentLeft="true"/>
+
+            </RelativeLayout>
+        </LinearLayout>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"
+            android:layout_marginTop="4dp"/>
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:background="#D3D3D3"
+            android:gravity="center_vertical">
+
+            <TableRow
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Average Time Spent Per:  "
+                    android:textColor="#000000"
+                    android:textSize="20dp"
+                    android:layout_marginLeft="10dp"/>
+
+                <Spinner
+                    android:id="@+id/average_time_frame_spinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="10dp"/>
+            </TableRow>
+
+        </TableLayout>
 
 
-    <com.github.mikephil.charting.charts.PieChart
-        android:id="@+id/pieChart"
-        android:layout_height= "fill_parent"
-        android:layout_width= "fill_parent" />
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2">
 
-</LinearLayout>
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:layout_gravity="center"
+                    android:textSize="20sp"
+                    android:textColor="#000000"
+                    android:id="@+id/averages_subjects"
+                    android:gravity="right"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="3dp"/>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:layout_gravity="center"
+                    android:textSize="20sp"
+                    android:textColor="#000000"
+                    android:id="@+id/averages_hours"
+                    android:gravity="left"
+                    android:layout_marginLeft="3dp"
+                    android:layout_alignParentLeft="true"/>
+
+            </RelativeLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
