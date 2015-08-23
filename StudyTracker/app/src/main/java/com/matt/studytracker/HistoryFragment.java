@@ -182,7 +182,7 @@ public class HistoryFragment extends Fragment {
             notifier.setVisibility(View.GONE);
         }
 
-        ((MainActivity) getActivity()).upDatePieChart();
+        ((MainActivity) getActivity()).updatePieChart();
     }
 
     public void addHistory(String subject, String timeElapsed, String date, String DBdate, boolean manuallyAdded, String interval,

@@ -14,6 +14,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
@@ -28,9 +29,11 @@ import java.util.List;
 public class HomeFragment extends Fragment
 {
     static final String TIMER_RUNNING = "timerRunning";
+    static final String REVERSE_TIMER_RUNNING = "reverse timer runnin";
     static final String START_TIME = "startTime";
     static final String SUBJECT_STRING = "subjectString";
     static final String HUMAN_START_TIME = "human end time";
+    static final String WILL_END_TIME = "will end time";
 
     public static final String START_YEAR = "start year";
     public static final String START_MONTH = "start month";
@@ -53,9 +56,11 @@ public class HomeFragment extends Fragment
     protected ImageButton stopButton;
     protected TableLayout topView;
 
+    protected boolean reverseTimerRunning;
     protected boolean timerRunning;
     protected long startedAt;
     protected long stoppedAt;
+    protected long willStopAt;
     protected String subjectString;
 
     protected String startHumanTime;
@@ -69,7 +74,9 @@ public class HomeFragment extends Fragment
     private static long UPDATE_EVERY = 200;
 
     protected Handler handler;
+    protected Handler reverseHandler;
     protected UpdateTimer updateTimer;
+    protected UpdateReverseTimer updateReverseTimer;
 
     protected Subject addedClass;
     protected boolean newClassCalled = false;
@@ -88,6 +95,8 @@ public class HomeFragment extends Fragment
     private int endDay;
     private int endHour;
     private int endMinute;
+
+    protected String readableTimeElapsed;
 
     public void newClass(String newClass, String creditHours, String difficulty, int intCredits, int intDifficulty)
     {
@@ -144,6 +153,9 @@ public class HomeFragment extends Fragment
 
         if(savedInstanceState != null){
             timerRunning = savedInstanceState.getBoolean(TIMER_RUNNING);
+            reverseTimerRunning = savedInstanceState.getBoolean(REVERSE_TIMER_RUNNING);
+            willStopAt = savedInstanceState.getLong(WILL_END_TIME);
+
             subjectString = savedInstanceState.getString(SUBJECT_STRING);
             startedAt = savedInstanceState.getLong(START_TIME);
             startHumanTime = savedInstanceState.getString(HUMAN_START_TIME);
@@ -162,12 +174,30 @@ public class HomeFragment extends Fragment
 
         }
 
+
         //Checks timer service, syncs if necessary
         if(((MainActivity)getActivity()).getTimerService() != null && ((MainActivity)getActivity()).serviceTiming() && savedInstanceState == null)  {
             timerRunning = true;
             subjectString = ((MainActivity)getActivity()).getServiceSubject();
             startedAt = ((MainActivity)getActivity()).getServiceTimeStarted();
             startHumanTime = ((MainActivity)getActivity()).getServiceHumanStartTime();
+
+            int[] tempStartTimes = ((MainActivity)getActivity()).getServiceStartTimesHolder();
+
+            startYear = tempStartTimes[0];
+            startMonth = tempStartTimes[1];
+            startDay = tempStartTimes[2];
+            startHour = tempStartTimes[3];
+            startMinute = tempStartTimes[4];
+        }
+
+        if(((MainActivity)getActivity()).getTimerService() != null && ((MainActivity)getActivity()).serviceReverseTiming() && savedInstanceState == null)  {
+            reverseTimerRunning = true;
+            subjectString = ((MainActivity)getActivity()).getServiceSubject();
+            startedAt = ((MainActivity)getActivity()).getServiceTimeStarted();
+            startHumanTime = ((MainActivity)getActivity()).getServiceHumanStartTime();
+
+            willStopAt = ((MainActivity)getActivity()).getServiceWillStopAt();
 
             int[] tempStartTimes = ((MainActivity)getActivity()).getServiceStartTimesHolder();
 
@@ -193,7 +223,7 @@ public class HomeFragment extends Fragment
         stopButton = (ImageButton) rootView.findViewById(R.id.stop_button);
         topView = (TableLayout) rootView.findViewById(R.id.topLayout);
 
-        if(timerRunning){
+        if(timerRunning || reverseTimerRunning){
             topView.setVisibility(View.VISIBLE);
         }
 
@@ -204,21 +234,20 @@ public class HomeFragment extends Fragment
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 //Log.d("homeFragment", "list item tapped");
-                if(!timerRunning) {
+                if(!timerRunning && !reverseTimerRunning) {
                     subjectString = homeListAdaptor.getItem(position).getSubject();
                     subject.setText(homeListAdaptor.getItem(position).getSubject());
 
-                    timerInitiated();
-                    handler = new Handler();
-                    updateTimer = new UpdateTimer();
-                    handler.postDelayed(updateTimer, UPDATE_EVERY);
+                    Switch countdownMode = (Switch) rootView.findViewById(R.id.switch1);
+                    if(countdownMode.isChecked()) {
+                        //backwardsTimerInitiated(0, 20);
+                        CountdownTimeDialog dialog = new CountdownTimeDialog();
+                        dialog.show(getFragmentManager(), CountdownTimeDialog.TAG);
+                    }
+                    else {
 
-                    ((MainActivity) getActivity()).startTimerService(subjectString);
-
-                    timer.setText("0:00:00");
-                    topView.setVisibility(View.VISIBLE);
-                    Animation animation = AnimationUtils.loadAnimation(getActivity(), R.anim.abc_slide_in_bottom);
-                    topView.startAnimation(animation);
+                        timerInitiated();
+                    }
 
                 }
             }
@@ -252,66 +281,9 @@ public class HomeFragment extends Fragment
         //for when stop button is tapped
         stopButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-
-                if(timerRunning == true){
-                    handler.removeCallbacks(updateTimer);
-                    handler = null;
-                    stoppedAt = System.currentTimeMillis();
-
-                    String tempStoppedTime = timer.getText().toString();
-                    stoppedTime = "";
-
-                    boolean firstColonHit = false;
-
-                    for(int i = 0; i < tempStoppedTime.length(); ++i){
-
-                        if(tempStoppedTime.charAt(i) == ':' && firstColonHit == true){
-                            i = tempStoppedTime.length();
-                        }else if(tempStoppedTime.charAt(i) == ':' && firstColonHit == false){
-                            firstColonHit = true;
-                            stoppedTime += Character.toString(tempStoppedTime.charAt(i));
-                        }
-                        else{
-                            stoppedTime += Character.toString(tempStoppedTime.charAt(i));
-                        }
-                    }
-                    stoppedSubject = subjectString;
-
-                    int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-                    int minute = Calendar.getInstance().get(Calendar.MINUTE);
-                    DBTimeHelper helper = new DBTimeHelper();
-                    endHumanTime = helper.getReadableTime(hour, minute);
-
-                    String interval = startHumanTime + " - " + endHumanTime;
-
-                    Calendar calendar = Calendar.getInstance();
-                    endYear = calendar.get(Calendar.YEAR);
-                    endMonth = calendar.get(Calendar.MONTH);
-                    endDay = calendar.get(Calendar.DAY_OF_MONTH);
-                    endHour = calendar.get(Calendar.HOUR_OF_DAY);
-                    endMinute = calendar.get(Calendar.MINUTE);
-
-                    mCallback.addToHistory(stoppedSubject, stoppedTime, interval, startYear, startMonth, startDay,
-                            startHour, startMinute, endYear, endMonth, endDay, endHour, endMinute);
-
-                    Animation animation = AnimationUtils.loadAnimation(getActivity(), R.anim.abc_fade_out);
-                    animation.setDuration(500);
-                    topView.startAnimation(animation);
-                    topView.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            topView.setVisibility(View.GONE);
-                        }
-                    }, 500);
-
-                    ((MainActivity) getActivity()).stopTimerService();
-                }
-
-                timerRunning = false;
+                stopTimer();
             }
         });
-
-
 
         //syncs with data base if not done so already
         if(!syncedWithDB) {
@@ -360,6 +332,71 @@ public class HomeFragment extends Fragment
         return rootView;
     }
 
+    public void stopTimer() {
+        if(timerRunning == true || reverseTimerRunning == true) {
+            if (timerRunning) {
+                handler.removeCallbacks(updateTimer);
+                handler = null;
+            }
+            if (reverseTimerRunning) {
+                reverseHandler.removeCallbacks(updateReverseTimer);
+                reverseHandler = null;
+            }
+            stoppedAt = System.currentTimeMillis();
+
+            String tempStoppedTime = readableTimeElapsed;
+            stoppedTime = "";
+
+            boolean firstColonHit = false;
+
+            for (int i = 0; i < tempStoppedTime.length(); ++i) {
+
+                if (tempStoppedTime.charAt(i) == ':' && firstColonHit == true) {
+                    i = tempStoppedTime.length();
+                } else if (tempStoppedTime.charAt(i) == ':' && firstColonHit == false) {
+                    firstColonHit = true;
+                    stoppedTime += Character.toString(tempStoppedTime.charAt(i));
+                } else {
+                    stoppedTime += Character.toString(tempStoppedTime.charAt(i));
+                }
+            }
+
+            stoppedSubject = subjectString;
+
+            int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+            int minute = Calendar.getInstance().get(Calendar.MINUTE);
+            DBTimeHelper helper = new DBTimeHelper();
+            endHumanTime = helper.getReadableTime(hour, minute);
+
+            String interval = startHumanTime + " - " + endHumanTime;
+
+            Calendar calendar = Calendar.getInstance();
+            endYear = calendar.get(Calendar.YEAR);
+            endMonth = calendar.get(Calendar.MONTH);
+            endDay = calendar.get(Calendar.DAY_OF_MONTH);
+            endHour = calendar.get(Calendar.HOUR_OF_DAY);
+            endMinute = calendar.get(Calendar.MINUTE);
+
+            mCallback.addToHistory(stoppedSubject, stoppedTime, interval, startYear, startMonth, startDay,
+                    startHour, startMinute, endYear, endMonth, endDay, endHour, endMinute);
+
+            Animation animation = AnimationUtils.loadAnimation(getActivity(), R.anim.abc_fade_out);
+            animation.setDuration(500);
+            topView.startAnimation(animation);
+            topView.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    topView.setVisibility(View.GONE);
+                }
+            }, 500);
+
+            ((MainActivity) getActivity()).stopTimerService();
+
+            timerRunning = false;
+            reverseTimerRunning = false;
+        }
+    }
+
     public void populateListWithDB(){
         Cursor cursor = ((MainActivity) getActivity()).myDB.getAllSubjectRows();
         if (cursor.moveToFirst()) {
@@ -404,9 +441,18 @@ public class HomeFragment extends Fragment
         startMinute = calendar.get(Calendar.MINUTE);
 
         timerRunning = true;
+
+        handler = new Handler();
+        updateTimer = new UpdateTimer();
+        handler.postDelayed(updateTimer, UPDATE_EVERY);
+
+        ((MainActivity) getActivity()).startTimerService(subjectString);
+
+        timer.setText("0:00:00");
+        topView.setVisibility(View.VISIBLE);
+        Animation animation = AnimationUtils.loadAnimation(getActivity(), R.anim.abc_slide_in_bottom);
+        topView.startAnimation(animation);
     }
-
-
 
     protected void setTimeDisplay(){
         String display;
@@ -436,6 +482,8 @@ public class HomeFragment extends Fragment
                 + String.format("%02d", minutes) + ":"
                 + String.format("%02d", seconds);
 
+        readableTimeElapsed = display;
+
         timer.setText(display);
     }
 
@@ -446,6 +494,12 @@ public class HomeFragment extends Fragment
             handler = new Handler();
             updateTimer = new UpdateTimer();
             handler.postDelayed(updateTimer, UPDATE_EVERY);
+        }
+
+        if(reverseTimerRunning){
+            reverseHandler = new Handler();
+            updateReverseTimer = new UpdateReverseTimer();
+            reverseHandler.postDelayed(updateReverseTimer, UPDATE_EVERY);
         }
     }
 
@@ -459,7 +513,12 @@ public class HomeFragment extends Fragment
             handler = null;
 
         }
-        Log.d("home fragment", "onStop");
+
+        if(reverseTimerRunning){
+            reverseHandler.removeCallbacks(updateReverseTimer);
+            updateReverseTimer = null;
+            reverseHandler = null;
+        }
     }
 
     @Override
@@ -483,8 +542,9 @@ public class HomeFragment extends Fragment
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState){
-        Log.d("HomeFragment", "onSaveInstanceState");
         savedInstanceState.putBoolean(TIMER_RUNNING, timerRunning);
+        savedInstanceState.putBoolean(REVERSE_TIMER_RUNNING, reverseTimerRunning);
+        savedInstanceState.putLong(WILL_END_TIME, willStopAt);
         savedInstanceState.putLong(START_TIME, startedAt);
         savedInstanceState.putString(SUBJECT_STRING, subjectString);
         savedInstanceState.putString(HUMAN_START_TIME, startHumanTime);
@@ -516,10 +576,6 @@ public class HomeFragment extends Fragment
     }
 
     class UpdateTimer implements Runnable {
-        /**
-         * Updates the counter display and vibrate if needed.
-         * Is called at regular intervals.
-         */
         public void run() {
 
             setTimeDisplay();
@@ -530,4 +586,123 @@ public class HomeFragment extends Fragment
         }
 
     }
+
+    private long getFutureTime(int hours, int minutes){
+        long timeNow = System.currentTimeMillis();
+
+        long millisTime = (long) (hours * 3600000) + (minutes * 60000);
+
+        long futureTime = timeNow + millisTime;
+
+        return futureTime;
+    }
+
+    public void backwardsTimerInitiated(int hours, int minutes, boolean vibrate){
+        startedAt = System.currentTimeMillis();
+        willStopAt = getFutureTime(hours, minutes);
+
+        int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        int minute = Calendar.getInstance().get(Calendar.MINUTE);
+        DBTimeHelper helper = new DBTimeHelper();
+        startHumanTime = helper.getReadableTime(hour, minute);
+
+        Calendar calendar = Calendar.getInstance();
+        startYear = calendar.get(Calendar.YEAR);
+        startMonth = calendar.get(Calendar.MONTH);
+        startDay = calendar.get(Calendar.DAY_OF_MONTH);
+        startHour = calendar.get(Calendar.HOUR_OF_DAY);
+        startMinute = calendar.get(Calendar.MINUTE);
+
+        reverseTimerRunning = true;
+
+        reverseHandler = new Handler();
+        updateReverseTimer = new UpdateReverseTimer();
+        reverseHandler.postDelayed(updateReverseTimer, UPDATE_EVERY);
+
+        ((MainActivity) getActivity()).startReverseTimerService(subjectString, hours, minutes, vibrate);
+
+        timer.setText("0:00:00");
+        topView.setVisibility(View.VISIBLE);
+        Animation animation = AnimationUtils.loadAnimation(getActivity(), R.anim.abc_slide_in_bottom);
+        topView.startAnimation(animation);
+    }
+
+    protected void setCountdownTimeDisplay(){
+        String display;
+        long timeNow;
+        long diff;
+        long seconds;
+        long minutes;
+        long hours;
+
+        if(reverseTimerRunning)
+            timeNow = System.currentTimeMillis();
+        else
+            timeNow = stoppedAt;
+
+        diff = willStopAt - timeNow;
+
+        if(diff < 0 )
+            diff = 0;
+
+        seconds = diff/1000;
+        minutes = seconds/60;
+        hours = minutes/60;
+        seconds = seconds % 60;
+        minutes = minutes % 60;
+
+        display = String.format("%d",hours) + ":"
+                + String.format("%02d", minutes) + ":"
+                + String.format("%02d", seconds);
+
+        if(diff <= 0)
+            display = "0:00:00";
+
+        if(!reverseTimerRunning)
+            display = "0:00:00";
+
+        timer.setText(display);
+
+        long timeElapsed = timeNow - startedAt;
+
+        seconds = timeElapsed/1000;
+        minutes = seconds/60;
+        hours = minutes/60;
+        seconds = seconds % 60;
+        minutes = minutes % 60;
+
+        readableTimeElapsed = String.format("%d",hours) + ":"
+                + String.format("%02d", minutes) + ":"
+                + String.format("%02d", seconds);
+
+        if( diff == 0){
+            //stopTimer();
+            reverseTimerRunning = false;
+            Animation animation = AnimationUtils.loadAnimation(getActivity(), R.anim.abc_fade_out);
+            animation.setDuration(500);
+            topView.startAnimation(animation);
+            topView.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    topView.setVisibility(View.GONE);
+                }
+            }, 500);
+        }
+
+    }
+
+    class UpdateReverseTimer implements Runnable {
+        public void run() {
+
+            setCountdownTimeDisplay();
+
+            if (reverseHandler != null) {
+                reverseHandler.postDelayed(this, UPDATE_EVERY);
+            }
+        }
+
+    }
+
+
+
 }

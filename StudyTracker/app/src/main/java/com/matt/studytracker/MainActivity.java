@@ -29,7 +29,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         SubjectLongTappedDialog.DialogListener,
         DeleteSubjectConfirmDialog.DeleteSubjectDialogListener,
         DeleteHistoryDialog.DeleteHistoryDialogListener,
-        HistoryLongTappedDialog.DialogListener{
+        HistoryLongTappedDialog.DialogListener,
+        CountdownTimeDialog.CountdownDialogListener{
     public static final String SUBJECT_ARRAY = "main activity subject array";
 
     public DBAdapter myDB;
@@ -63,6 +64,134 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     }
 
     private String oldSubject;
+
+    public static final String COUNTDOWN_ENDING = "study_tracker_countdown_ending";
+
+    /*private BroadcastReceiver bReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+
+            String subject = bundle.getString(DBTimeHelper.SUBJECT);
+            String timeElapsed = bundle.getString(DBTimeHelper.ELAPSED_TIME);
+            String interval = bundle.getString(DBTimeHelper.INTERVAL);
+            int startYear = bundle.getInt(DBTimeHelper.START_YEAR);
+            int startMonth = bundle.getInt(DBTimeHelper.START_MONTH);
+            int startDay = bundle.getInt(DBTimeHelper.START_YEAR);
+            int startHour = bundle.getInt(DBTimeHelper.START_YEAR);
+            int startMinute = bundle.getInt(DBTimeHelper.START_YEAR);
+            int endYear = bundle.getInt(DBTimeHelper.END_YEAR);
+            int endMonth = bundle.getInt(DBTimeHelper.END_MONTH);
+            int endDay = bundle.getInt(DBTimeHelper.END_DAY);
+            int endHour = bundle.getInt(DBTimeHelper.END_HOUR);
+            int endMinute = bundle.getInt(DBTimeHelper.END_MINUTE);
+
+            Log.d("MainActivity", "startYear" + Integer.toString(startYear));
+
+            addToHistory(subject, timeElapsed, interval,
+                    startYear, startMonth, startDay, startHour, startMinute,
+                    endYear, endMonth, endDay, endHour, endMinute);
+
+            Log.d("MainActivity", "should add to db");
+        }
+    };*/
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+
+        /*LocalBroadcastManager bManager = LocalBroadcastManager.getInstance(this);
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(COUNTDOWN_ENDING);
+        bManager.registerReceiver(bReceiver, intentFilter);*/
+
+        if(savedInstanceState != null){
+            subjectArray = savedInstanceState.getStringArray(SUBJECT_ARRAY);
+            oldSubject = savedInstanceState.getString("OldSubject");
+        }
+
+
+
+        super.onCreate(savedInstanceState);
+        openDataBase();
+        setContentView(R.layout.activity_main);
+
+        actionbar = getSupportActionBar();
+        actionbar.setNavigationMode(actionbar.NAVIGATION_MODE_TABS);
+        viewPager = (ViewPager) findViewById(R.id.pager);
+        mAdapter = new TabsPagerAdapter(getSupportFragmentManager());
+
+        viewPager.setAdapter(mAdapter);
+
+        ActionBar.Tab HomeTab = actionbar.newTab().setIcon(R.drawable.home);
+        ActionBar.Tab ListTab = actionbar.newTab().setIcon(R.drawable.history);
+        ActionBar.Tab ChartTab = actionbar.newTab().setIcon(R.drawable.analytics);
+
+        HomeTab.setTabListener(this);
+        ListTab.setTabListener(this);
+        ChartTab.setTabListener(this);
+
+        actionbar.addTab(HomeTab);
+        actionbar.addTab(ListTab);
+        actionbar.addTab(ChartTab);
+
+        actionbar.setDisplayShowTitleEnabled(false);
+        actionbar.setDisplayShowHomeEnabled(false);
+
+        viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+
+            @Override
+            public void onPageSelected(int position) {
+                // on changing the page
+                // make respected tab selected
+                actionbar.setSelectedNavigationItem(position);
+            }
+
+            @Override
+            public void onPageScrolled(int arg0, float arg1, int arg2) {
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int arg0) {
+            }
+        });
+
+        Intent intent = getIntent();
+        Bundle bundle = intent.getExtras();
+        if(bundle != null) {
+            if (intent.getExtras().getBoolean(TimerService.IS_COUNTDOWN_END) ) {
+                String subject = bundle.getString(DBTimeHelper.SUBJECT);
+                String timeElapsed = bundle.getString(DBTimeHelper.ELAPSED_TIME);
+                String interval = bundle.getString(DBTimeHelper.INTERVAL);
+                int startYear = bundle.getInt(DBTimeHelper.START_YEAR);
+                int startMonth = bundle.getInt(DBTimeHelper.START_MONTH);
+                int startDay = bundle.getInt(DBTimeHelper.START_YEAR);
+                int startHour = bundle.getInt(DBTimeHelper.START_YEAR);
+                int startMinute = bundle.getInt(DBTimeHelper.START_YEAR);
+                int endYear = bundle.getInt(DBTimeHelper.END_YEAR);
+                int endMonth = bundle.getInt(DBTimeHelper.END_MONTH);
+                int endDay = bundle.getInt(DBTimeHelper.END_DAY);
+                int endHour = bundle.getInt(DBTimeHelper.END_HOUR);
+                int endMinute = bundle.getInt(DBTimeHelper.END_MINUTE);
+
+                addToHistory(subject, timeElapsed, interval,
+                        startYear, startMonth, startDay, startHour, startMinute,
+                        endYear, endMonth, endDay, endHour, endMinute);
+
+                Log.d("MainActivity", "should add to db");
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("Session Countdown Finished");
+                builder.setMessage("Subject: " + subject + "\n" + "Duration: " + timeElapsed);
+                builder.setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                    }
+                });
+                builder.create().show();
+
+            }
+        }
+    }
 
     @Override
     public void onDeleteSubjectConfirmed() {
@@ -122,7 +251,6 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         intent.putExtra(AddClass.DIFFICULTY_RATING, subjectDifficulty);
         intent.putExtra(AddClass.DATA_BASE_ID, dataBaseID);
 
-        Log.d("MainActivity", "Data base id: " + Integer.toString(dataBaseID));
 
         MainActivity.this.startActivityForResult(intent, AddClass.ACTIVITY_ID);
     }
@@ -141,88 +269,26 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         newHistoryEntry(subject, timeElapsed, date, DBdate, false, interval, startYear,
                 startMonth, startDay, startHour, startMinute, endYear, endMonth, endDay,
                 endHour, endMinute);
+
+        Log.d("MainActivity", "addToHistory called");
     }
 
     private void newHistoryEntry(String subject, String timeElapsed, String date, String DBdate, boolean manuallyAdded,
                                  String interval, int startYear, int startMonth, int startDay, int startHour, int startMinute,
                                  int endYear, int endMonth, int endDay, int endHour, int endMinute) {
+
+        addHistoryToDataBase(subject, timeElapsed, DBdate, date, interval, startYear, startMonth, startDay, startHour,
+                startMinute, endYear, endMonth, endDay, endHour, endMinute);
+
         HistoryFragment listFrag = (HistoryFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getListTag());
         if(listFrag != null) {
-            //Log.d("MainActivity", "listFrag is not null");
-            addHistoryToDataBase(subject, timeElapsed, DBdate, date, interval, startYear, startMonth, startDay, startHour,
-                    startMinute, endYear, endMonth, endDay, endHour, endMinute);
 
             listFrag.addHistory(subject, timeElapsed, date, DBdate, manuallyAdded, interval, startYear,
                     startMonth, startDay, startHour, startMinute, endYear, endMonth, endDay,
                     endHour, endMinute);
         }else{
-           // Log.d("MainActivity", "listFrag is null");
-            addHistoryToDataBase(subject, timeElapsed, DBdate, date, interval, startYear, startMonth, startDay, startHour,
-                    startMinute, endYear, endMonth, endDay, endHour, endMinute);
 
-            HistoryFragment newFragment = new HistoryFragment();
-
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.pager, newFragment);
-            transaction.commit();
-            newFragment.addHistory(subject, timeElapsed, date, DBdate, manuallyAdded, interval, startYear,
-                    startMonth, startDay, startHour, startMinute, endYear, endMonth, endDay,
-                    endHour, endMinute);
         }
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        if(savedInstanceState != null){
-            subjectArray = savedInstanceState.getStringArray(SUBJECT_ARRAY);
-            oldSubject = savedInstanceState.getString("OldSubject");
-        }
-
-        //Log.d("MainActivity", "onCreate");
-
-        super.onCreate(savedInstanceState);
-        openDataBase();
-        setContentView(R.layout.activity_main);
-
-        actionbar = getSupportActionBar();
-        actionbar.setNavigationMode(actionbar.NAVIGATION_MODE_TABS);
-        viewPager = (ViewPager) findViewById(R.id.pager);
-        mAdapter = new TabsPagerAdapter(getSupportFragmentManager());
-
-        viewPager.setAdapter(mAdapter);
-
-        ActionBar.Tab HomeTab = actionbar.newTab().setIcon(R.drawable.home);
-        ActionBar.Tab ListTab = actionbar.newTab().setIcon(R.drawable.history);
-        ActionBar.Tab ChartTab = actionbar.newTab().setIcon(R.drawable.analytics);
-
-        HomeTab.setTabListener(this);
-        ListTab.setTabListener(this);
-        ChartTab.setTabListener(this);
-
-        actionbar.addTab(HomeTab);
-        actionbar.addTab(ListTab);
-        actionbar.addTab(ChartTab);
-
-        actionbar.setDisplayShowTitleEnabled(false);
-        actionbar.setDisplayShowHomeEnabled(false);
-
-        viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-
-            @Override
-            public void onPageSelected(int position) {
-                // on changing the page
-                // make respected tab selected
-                actionbar.setSelectedNavigationItem(position);
-            }
-
-            @Override
-            public void onPageScrolled(int arg0, float arg1, int arg2) {
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int arg0) {
-            }
-        });
     }
 
     public void openDataBase(){
@@ -292,9 +358,17 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
     }
 
+    public void startReverseTimerService(String subject, int hours, int minutes, boolean vibrate){
+        timerService.startReverseTimer(subject, hours, minutes, vibrate);
+    }
+
     public boolean serviceTiming(){
         return timerService.timerRunning;
     }
+
+    public boolean serviceReverseTiming(){return timerService.reverseTimerRunning;}
+
+    public long getServiceWillStopAt(){return timerService.willStopAt; }
 
     public String getServiceSubject(){
         return timerService.timedSubject;
@@ -503,11 +577,61 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         editSessionActivityLaunch(historyItemToBeEdited);
     }
 
-    public void upDatePieChart(){
+    public void updatePieChart(){
         ChartFragment chartFrag = (ChartFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getChartTag());
         if(chartFrag != null) {
-            chartFrag.updatePieChart();
+            chartFrag.notifyDataSetChanged();
         }
+    }
+
+    @Override
+    public void onCountdownStarted(int hours, int minutes, boolean vibrate) {
+        HomeFragment homeFrag = (HomeFragment) getSupportFragmentManager().findFragmentByTag(mAdapter.getHomeTag());
+        if(homeFrag != null) {
+            homeFrag.backwardsTimerInitiated(hours, minutes, vibrate);
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+
+        Bundle bundle = intent.getExtras();
+
+        if (bundle != null) {
+            String subject = bundle.getString(DBTimeHelper.SUBJECT);
+            String timeElapsed = bundle.getString(DBTimeHelper.ELAPSED_TIME);
+            String interval = bundle.getString(DBTimeHelper.INTERVAL);
+            int startYear = bundle.getInt(DBTimeHelper.START_YEAR);
+            int startMonth = bundle.getInt(DBTimeHelper.START_MONTH);
+            int startDay = bundle.getInt(DBTimeHelper.START_YEAR);
+            int startHour = bundle.getInt(DBTimeHelper.START_YEAR);
+            int startMinute = bundle.getInt(DBTimeHelper.START_YEAR);
+            int endYear = bundle.getInt(DBTimeHelper.END_YEAR);
+            int endMonth = bundle.getInt(DBTimeHelper.END_MONTH);
+            int endDay = bundle.getInt(DBTimeHelper.END_DAY);
+            int endHour = bundle.getInt(DBTimeHelper.END_HOUR);
+            int endMinute = bundle.getInt(DBTimeHelper.END_MINUTE);
+
+            Log.d("MainActivity", "startYear" + Integer.toString(startYear));
+
+            addToHistory(subject, timeElapsed, interval,
+                    startYear, startMonth, startDay, startHour, startMinute,
+                    endYear, endMonth, endDay, endHour, endMinute);
+
+            Log.d("MainActivity", "should add to db");
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle("Session Countdown Finished");
+            builder.setMessage("Subject: " + subject + "\n" + "Duration: " + timeElapsed);
+            builder.setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                }
+            });
+            builder.create().show();
+        }
+
+        super.onNewIntent(intent);
     }
 }
 

@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,9 +63,15 @@ public class ChartFragment extends Fragment {
     private TextView averages;
     private TextView averagesSubjects;
 
+    private int[] pieMinutes;
+    private int[] averagesMinutes;
+
+    private boolean setSelectionJustCalled = false;
+
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View rootView = inflater.inflate(R.layout.chart_fragment, container, false);
+        pieChart = (PieChart) rootView.findViewById(R.id.pieChart);
 
         if(savedInstanceState != null){
             selectedInterval = savedInstanceState.getString(SELECTED_INTERVAL);
@@ -91,16 +98,23 @@ public class ChartFragment extends Fragment {
 
         Spinner pieChartSpinner = (Spinner) rootView.findViewById(R.id.percent_time_frame_spinner);
         pieChartSpinner.setAdapter(pieChartSpinnerAdapter);
+        setSelectionJustCalled = true;
         pieChartSpinner.setSelection(1);
+
 
         //for when a different time interval to analyse is selected
         pieChartSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 selectedInterval = pieChartSpinnerAdapter.getItem(i);
-                //xData = getSubjectsArray();
-                //yData = getPercentages(getTotalMinutesArray(howFarBack), xData.length);
-                updatePieChart();
+
+                if(!setSelectionJustCalled) {
+                    pieMinutes = getTotalMinutesArray(selectedInterval);
+                    Log.d("ChartFragment", "pieChartSpinner on selected method called");
+                    updatePieChart();
+                }
+                setSelectionJustCalled = false;
+
             }
 
             @Override
@@ -121,7 +135,9 @@ public class ChartFragment extends Fragment {
                 );
 
         averagesTimeIntervalSpinner.setAdapter(averagesSpinnerAdapter);
+        setSelectionJustCalled = true;
         averagesTimeIntervalSpinner.setSelection(1);
+
 
         //for when a different time interval to determine average times is selected
         averagesTimeIntervalSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -129,8 +145,11 @@ public class ChartFragment extends Fragment {
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 selectedAveragesInterval = averagesTimeIntervalSpinner.getSelectedItem().toString();
 
-                updateAverages();
-
+                if(!setSelectionJustCalled) {
+                    averagesMinutes = getTotalMinutesArray(selectedAveragesInterval);
+                    updateAverages();
+                }
+                setSelectionJustCalled = false;
             }
 
             @Override
@@ -138,9 +157,6 @@ public class ChartFragment extends Fragment {
 
             }
         });
-
-        pieChart = (PieChart) rootView.findViewById(R.id.pieChart);
-
         updatePieChart();
 
         return rootView;
@@ -157,6 +173,14 @@ public class ChartFragment extends Fragment {
     }
 
     public void updatePieChart(){
+        Runnable runnable = new RenderPieChart();
+        runnable.run();
+    }
+
+    public void updatePieChartThread(){
+        Log.d("ChartFragment", "updatePieChartThread called");
+        pieMinutes = getTotalMinutesArray(selectedInterval);
+
         String howFarBack = selectedInterval;
         pieChart.setUsePercentValues(true);
 
@@ -164,7 +188,7 @@ public class ChartFragment extends Fragment {
         pieChart.setDescription("");
 
         xData = getSubjectsArray();
-        yData = getPercentages(getTotalMinutesArray(howFarBack), xData.length);
+        yData = getPercentages(pieMinutes, xData.length);
 
         pieChart.setDrawHoleEnabled(true);
         pieChart.setHoleColorTransparent(true);
@@ -181,7 +205,6 @@ public class ChartFragment extends Fragment {
                 String data = xValsList.get(e.getXIndex()) + " " + String.format("%.1f", e.getVal() * 100) + " %";
 
                 Context context = ((MainActivity) getActivity());
-                CharSequence text = "Hello toast!";
                 int duration = Toast.LENGTH_SHORT;
 
                 if (toast != null)
@@ -278,9 +301,17 @@ public class ChartFragment extends Fragment {
                         ++timeLocations;
 
                         //TODO enable more than 10 hours
-                        minutes += (Character.getNumericValue(timeElapsed.charAt(0)) * 60);
-                        minutes += (Character.getNumericValue(timeElapsed.charAt(2)) * 10);
-                        minutes += (Character.getNumericValue(timeElapsed.charAt(3)));
+                        int position = 0;
+                        String hours = "";
+                        while(!Character.toString(timeElapsed.charAt(position)).equals(":")) {
+                            hours += Character.toString(timeElapsed.charAt(position));
+                            position++;
+                        }
+                        minutes += (Integer.parseInt(hours) * 60);
+                        position++;
+                        minutes += (Character.getNumericValue(timeElapsed.charAt(position)) * 10);
+                        position++;
+                        minutes += (Character.getNumericValue(timeElapsed.charAt(position)));
                     }
                 } while (historyCursor.moveToNext() && historyCursor.getLong(DBAdapter.H_DATE_COLUMN) >= formattedDate);
                 totalMinutes[i] = minutes;
@@ -345,7 +376,7 @@ public class ChartFragment extends Fragment {
 
     private String getHoursBreakdownString() {
         String[] subjects = getSubjectsArray();
-        int[] intMinutes = getTotalMinutesArray(selectedInterval);
+        int[] intMinutes = pieMinutes;
 
         float[] minutes = new float[intMinutes.length];
 
@@ -371,7 +402,8 @@ public class ChartFragment extends Fragment {
         Cursor historyCursor = ((MainActivity) getActivity()).myDB.getAllHistoryRows();
 
         if(historyCursor.moveToFirst()){
-            String firstEntry = Long.toString(historyCursor.getLong(DBAdapter.H_DATE_COLUMN));
+            DBTimeHelper helper = new DBTimeHelper();
+            String firstEntry = helper.getCurrentDBdate();
 
             historyCursor.moveToLast();
             String lastEntry = Long.toString(historyCursor.getLong(DBAdapter.H_DATE_COLUMN));
@@ -431,6 +463,23 @@ public class ChartFragment extends Fragment {
         outState.putString(SELECTED_INTERVAL, selectedInterval);
         outState.putString(SELECTED_AVERAGES_INTERVALS, selectedAveragesInterval);
         super.onSaveInstanceState(outState);
+    }
+
+    public class RenderPieChart implements Runnable {
+
+
+        @Override
+        public void run() {
+            // Moves the current Thread into the background
+            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+
+            updatePieChartThread();
+        }
+    }
+
+    public void notifyDataSetChanged(){
+        pieMinutes = getTotalMinutesArray(selectedInterval);
+        updatePieChart();
     }
 
 }

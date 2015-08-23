@@ -9,6 +9,29 @@ public class DBTimeHelper {
     public static final String[] MONTHS = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
     public static final String[] DAYS = {"", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
+    public static final String SUBJECT = "subject chosen for added session";
+    public static final String IS_EDIT = "activity was launched in order to edit a session";
+    public static final String START_DATE = "start date chosen for added session";
+    public static final String END_DATE = "end date chosen for added session";
+    public static final String DB_ID = "db id of edited session";
+
+    public static final String DATA_BASE_DATE = "date formatted for database";
+
+    public static final String ELAPSED_TIME = "elapsed time";
+    public static final String INTERVAL = "time interval";
+
+    public static final String START_YEAR = "start_year";
+    public static final String START_MONTH = "start_month";
+    public static final String START_DAY = "start_day";
+    public static final String START_HOUR = "start_hour";
+    public static final String START_MINUTE = "start_minute";
+
+    public static final String END_YEAR = "end_year";
+    public static final String END_MONTH = "end_month";
+    public static final String END_DAY = "end_day";
+    public static final String END_HOUR = "end_hour";
+    public static final String END_MINUTE = "end_minute";
+
     public long getFormattedPastTime(String when){
 
         Calendar calendar = Calendar.getInstance();
