@@ -14,7 +14,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.Tab;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -67,42 +66,9 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
     public static final String COUNTDOWN_ENDING = "study_tracker_countdown_ending";
 
-    /*private BroadcastReceiver bReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Bundle bundle = intent.getExtras();
-
-            String subject = bundle.getString(DBTimeHelper.SUBJECT);
-            String timeElapsed = bundle.getString(DBTimeHelper.ELAPSED_TIME);
-            String interval = bundle.getString(DBTimeHelper.INTERVAL);
-            int startYear = bundle.getInt(DBTimeHelper.START_YEAR);
-            int startMonth = bundle.getInt(DBTimeHelper.START_MONTH);
-            int startDay = bundle.getInt(DBTimeHelper.START_YEAR);
-            int startHour = bundle.getInt(DBTimeHelper.START_YEAR);
-            int startMinute = bundle.getInt(DBTimeHelper.START_YEAR);
-            int endYear = bundle.getInt(DBTimeHelper.END_YEAR);
-            int endMonth = bundle.getInt(DBTimeHelper.END_MONTH);
-            int endDay = bundle.getInt(DBTimeHelper.END_DAY);
-            int endHour = bundle.getInt(DBTimeHelper.END_HOUR);
-            int endMinute = bundle.getInt(DBTimeHelper.END_MINUTE);
-
-            Log.d("MainActivity", "startYear" + Integer.toString(startYear));
-
-            addToHistory(subject, timeElapsed, interval,
-                    startYear, startMonth, startDay, startHour, startMinute,
-                    endYear, endMonth, endDay, endHour, endMinute);
-
-            Log.d("MainActivity", "should add to db");
-        }
-    };*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-        /*LocalBroadcastManager bManager = LocalBroadcastManager.getInstance(this);
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(COUNTDOWN_ENDING);
-        bManager.registerReceiver(bReceiver, intentFilter);*/
 
         if(savedInstanceState != null){
             subjectArray = savedInstanceState.getStringArray(SUBJECT_ARRAY);
@@ -176,8 +142,6 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
                 addToHistory(subject, timeElapsed, interval,
                         startYear, startMonth, startDay, startHour, startMinute,
                         endYear, endMonth, endDay, endHour, endMinute);
-
-                Log.d("MainActivity", "should add to db");
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setTitle("Session Countdown Finished");
@@ -270,7 +234,6 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
                 startMonth, startDay, startHour, startMinute, endYear, endMonth, endDay,
                 endHour, endMinute);
 
-        Log.d("MainActivity", "addToHistory called");
     }
 
     private void newHistoryEntry(String subject, String timeElapsed, String date, String DBdate, boolean manuallyAdded,
@@ -612,13 +575,11 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
             int endHour = bundle.getInt(DBTimeHelper.END_HOUR);
             int endMinute = bundle.getInt(DBTimeHelper.END_MINUTE);
 
-            Log.d("MainActivity", "startYear" + Integer.toString(startYear));
+
 
             addToHistory(subject, timeElapsed, interval,
                     startYear, startMonth, startDay, startHour, startMinute,
                     endYear, endMonth, endDay, endHour, endMinute);
-
-            Log.d("MainActivity", "should add to db");
 
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
             builder.setTitle("Session Countdown Finished");

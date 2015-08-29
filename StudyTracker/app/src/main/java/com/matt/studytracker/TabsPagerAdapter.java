@@ -3,7 +3,6 @@ package com.matt.studytracker;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.util.Log;
 import android.view.ViewGroup;
 
 public class TabsPagerAdapter extends FragmentPagerAdapter {
@@ -33,7 +32,6 @@ public class TabsPagerAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int index) {
         switch (index) {
             case 0:
-                Log.d("Adapter", "returning new homeFragment");
                 return new HomeFragment();
             case 1:
                 return new HistoryFragment();

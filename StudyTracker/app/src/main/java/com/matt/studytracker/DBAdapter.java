@@ -253,7 +253,6 @@ public class DBAdapter {
     }
 
     public boolean deleteHistoryRows(String subject) {
-        Log.d("DBAdapter", "deleteHistoryRowsCalled");
         String where = HISTORY_SUBJECT + "=?"; //+ rowId;
         return db.delete(HISTORY_TABLE, where, new String[] {String.valueOf(subject)}) > 0;
     }

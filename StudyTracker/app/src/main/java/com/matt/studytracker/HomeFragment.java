@@ -5,7 +5,6 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +16,10 @@ import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TableLayout;
 import android.widget.TextView;
+
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -233,7 +236,6 @@ public class HomeFragment extends Fragment
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                //Log.d("homeFragment", "list item tapped");
                 if(!timerRunning && !reverseTimerRunning) {
                     subjectString = homeListAdaptor.getItem(position).getSubject();
                     subject.setText(homeListAdaptor.getItem(position).getSubject());
@@ -329,6 +331,30 @@ public class HomeFragment extends Fragment
 
         setSubjectArray();
 
+
+
+        final AdView mAdView = (AdView) rootView.findViewById(R.id.adView);
+
+        AdRequest adRequest = new AdRequest.Builder()
+               // .addTestDevice("D4722643407419B51A4C0F49A926C2C0")
+                .build();
+
+        mAdView.loadAd(adRequest);
+
+        mAdView.setAdListener(new AdListener() {
+            @Override
+            public void onAdFailedToLoad(int errorCode) {
+                // Save app state before going to the ad overlay.
+                mAdView.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAdLoaded(){
+                mAdView.setVisibility(View.VISIBLE);
+            }
+        });
+
+
         return rootView;
     }
 
@@ -415,7 +441,6 @@ public class HomeFragment extends Fragment
                 subjectItem.setIntCredits(cursor.getInt(DBAdapter.INT_CREDIT_HOURS_COLUMN));
 
                 subjectItem.setDataBaseID(cursor.getInt(DBAdapter.ROW_ID_COLUMN));
-                Log.d("HomeFragment", "Data base id: " + Integer.toString(subjectItem.getDataBaseID()));
 
                 homeListAdaptor.add(subjectItem);
             } while (cursor.moveToNext());
@@ -537,7 +562,6 @@ public class HomeFragment extends Fragment
     @Override
     public void onDestroy(){
         super.onDestroy();
-        //Log.d("home fragment", "onDestroy");
     }
 
     @Override

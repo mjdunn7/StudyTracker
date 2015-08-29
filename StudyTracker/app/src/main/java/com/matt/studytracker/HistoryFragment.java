@@ -13,6 +13,10 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -115,6 +119,33 @@ public class HistoryFragment extends Fragment {
                 //dialog.show(getFragmentManager(), DeleteHistoryDialog.TAG);
 
                 return true;
+            }
+        });
+
+        historyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                ((MainActivity) getActivity()).setHistoryItemToBeEdited(historyList.get(i));
+                ((MainActivity) getActivity()).onHistoryEditClick();
+            }
+        });
+
+        final AdView mAdView = (AdView) rootView.findViewById(R.id.adView_history);
+        AdRequest adRequest = new AdRequest.Builder()
+                //.addTestDevice("D4722643407419B51A4C0F49A926C2C0")
+                .build();
+        mAdView.loadAd(adRequest);
+
+        mAdView.setAdListener(new AdListener() {
+            @Override
+            public void onAdFailedToLoad(int errorCode) {
+                // Save app state before going to the ad overlay.
+                mAdView.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAdLoaded() {
+                mAdView.setVisibility(View.VISIBLE);
             }
         });
 

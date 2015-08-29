@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:ads="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -98,5 +99,18 @@
         android:layout_gravity="center|bottom"
         android:background="#33ACCC"
         android:onClick="addButtonClick" />
+
+
+        <com.google.android.gms.ads.AdView
+            android:id="@+id/adView"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="center"
+            android:background="#000000"
+            ads:adSize="BANNER"
+            ads:adUnitId="ca-app-pub-9709458057768591/4600901662">
+        </com.google.android.gms.ads.AdView>
 
 </LinearLayout>
