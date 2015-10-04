@@ -13,8 +13,8 @@ import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Switch;
-import android.widget.TableLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.ads.AdListener;
@@ -57,7 +57,7 @@ public class HomeFragment extends Fragment
     protected TextView subject;
     protected TextView timer;
     protected ImageButton stopButton;
-    protected TableLayout topView;
+    protected RelativeLayout topView;
 
     protected boolean reverseTimerRunning;
     protected boolean timerRunning;
@@ -224,7 +224,7 @@ public class HomeFragment extends Fragment
         subject = (TextView) rootView.findViewById(R.id.subject_field);
         timer = (TextView) rootView.findViewById(R.id.timer);
         stopButton = (ImageButton) rootView.findViewById(R.id.stop_button);
-        topView = (TableLayout) rootView.findViewById(R.id.topLayout);
+        topView = (RelativeLayout) rootView.findViewById(R.id.topLayout);
 
         if(timerRunning || reverseTimerRunning){
             topView.setVisibility(View.VISIBLE);

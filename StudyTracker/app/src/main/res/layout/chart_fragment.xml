@@ -94,27 +94,8 @@
                     android:layout_gravity="center"
                     android:textSize="20sp"
                     android:textColor="#000000"
-                    android:id="@+id/hours_breakdown_subjects"
-                    android:gravity="right"
-                    android:layout_alignParentRight="true"
-                    android:layout_marginRight="3dp"/>
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1">
-
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:layout_gravity="center"
-                    android:textSize="20sp"
-                    android:textColor="#000000"
-                    android:id="@+id/hours_breakdown_hours"
-                    android:gravity="left"
+                    android:id="@+id/hours_breakdown"
+                    android:gravity="center"
                     android:layout_marginLeft="3dp"
                     android:layout_alignParentLeft="true"/>
 
@@ -172,31 +153,13 @@
                     android:layout_gravity="center"
                     android:textSize="20sp"
                     android:textColor="#000000"
-                    android:id="@+id/averages_subjects"
-                    android:gravity="right"
+                    android:id="@+id/averages"
+                    android:gravity="center"
                     android:layout_alignParentRight="true"
                     android:layout_marginRight="3dp"/>
 
             </RelativeLayout>
 
-            <RelativeLayout
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1">
-
-                <TextView
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:layout_gravity="center"
-                    android:textSize="20sp"
-                    android:textColor="#000000"
-                    android:id="@+id/averages_hours"
-                    android:gravity="left"
-                    android:layout_marginLeft="3dp"
-                    android:layout_alignParentLeft="true"/>
-
-            </RelativeLayout>
         </LinearLayout>
 
     </LinearLayout>

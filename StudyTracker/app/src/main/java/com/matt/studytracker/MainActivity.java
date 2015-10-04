@@ -124,7 +124,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
         if(bundle != null) {
-            if (intent.getExtras().getBoolean(TimerService.IS_COUNTDOWN_END) ) {
+            if (bundle.getBoolean(TimerService.IS_COUNTDOWN_END, false) ) {
                 String subject = bundle.getString(DBTimeHelper.SUBJECT);
                 String timeElapsed = bundle.getString(DBTimeHelper.ELAPSED_TIME);
                 String interval = bundle.getString(DBTimeHelper.INTERVAL);
@@ -560,7 +560,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
         Bundle bundle = intent.getExtras();
 
-        if (bundle != null) {
+        if (bundle != null && bundle.getBoolean(TimerService.IS_COUNTDOWN_END, false)) {
             String subject = bundle.getString(DBTimeHelper.SUBJECT);
             String timeElapsed = bundle.getString(DBTimeHelper.ELAPSED_TIME);
             String interval = bundle.getString(DBTimeHelper.INTERVAL);

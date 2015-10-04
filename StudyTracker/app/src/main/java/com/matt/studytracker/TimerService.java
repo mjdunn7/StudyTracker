@@ -264,9 +264,6 @@ public class TimerService extends Service {
         reverseHandler = new Handler();
         updateReverseTimer = new UpdateReverseTimer();
         reverseHandler.postDelayed(updateReverseTimer, UPDATE_EVERY);
-
-
-
     }
 
     protected void setCountdownTimeDisplay(){

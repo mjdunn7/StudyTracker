@@ -57,10 +57,10 @@ public class ChartFragment extends Fragment {
     private static Toast toast;
 
     private TextView hoursBreakdown;
-    private TextView subjectBreakdown;
+   // private TextView subjectBreakdown;
 
     private TextView averages;
-    private TextView averagesSubjects;
+    //private TextView averagesSubjects;
 
     private int[] pieMinutes;
     private int[] averagesMinutes;
@@ -87,12 +87,12 @@ public class ChartFragment extends Fragment {
                 );
 
         //initializes hours breakdown textview
-        hoursBreakdown = (TextView) rootView.findViewById(R.id.hours_breakdown_hours);
-        subjectBreakdown = (TextView) rootView.findViewById(R.id.hours_breakdown_subjects);
+        hoursBreakdown = (TextView) rootView.findViewById(R.id.hours_breakdown);
+        //subjectBreakdown = (TextView) rootView.findViewById(R.id.hours_breakdown_subjects);
 
         //initializes averages textviews
-        averages = (TextView) rootView.findViewById(R.id.averages_hours);
-        averagesSubjects = (TextView) rootView.findViewById(R.id.averages_subjects);
+        averages = (TextView) rootView.findViewById(R.id.averages);
+        //averagesSubjects = (TextView) rootView.findViewById(R.id.averages_subjects);
 
 
         Spinner pieChartSpinner = (Spinner) rootView.findViewById(R.id.percent_time_frame_spinner);
@@ -162,12 +162,12 @@ public class ChartFragment extends Fragment {
 
     public void updateHoursBreakdown(){
         hoursBreakdown.setText(getHoursBreakdownString());
-        subjectBreakdown.setText(getSubjectsBreakdownString());
+        //subjectBreakdown.setText(getSubjectsBreakdownString());
     }
 
     public void updateAverages(){
         averages.setText(getAveragesString(selectedAveragesInterval));
-        averagesSubjects.setText(getSubjectsBreakdownString());
+        //averagesSubjects.setText(getSubjectsBreakdownString());
     }
 
     public void updatePieChart(){
@@ -385,10 +385,10 @@ public class ChartFragment extends Fragment {
         float total = 0;
         for (int i = 0; i < subjects.length; ++i) {
             total += minutes[i] / 60;
-            info += String.format("%.1f", minutes[i] / 60) + " hours" + "\n";
+            info += subjects[i] + ": " + String.format("%.1f", minutes[i] / 60) + " hours" + "\n";
         }
 
-        info += String.format("%.1f", total) + " hours";
+        info += "Total: " + String.format("%.1f", total) + " hours";
 
         return info;
     }
@@ -447,10 +447,10 @@ public class ChartFragment extends Fragment {
         for(int i = 0; i < subjects.length; ++i){
             double doubleTotalHours = (double) totalMinutes[i]/60;
             total += doubleTotalHours/timeSpan;
-            averages += String.format("%.1f", doubleTotalHours/timeSpan) + " hours" + "\n";
+            averages += subjects[i] + ": " + String.format("%.1f", doubleTotalHours/timeSpan) + " hours" + "\n";
         }
 
-        averages += String.format("%.1f", total) + " hours" + "\n";
+        averages += "Total: " + String.format("%.1f", total) + " hours" + "\n";
 
         return averages;
     }

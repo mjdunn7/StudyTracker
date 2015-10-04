@@ -21,7 +21,7 @@
         android:visibility="gone"
         android:text="No subjects yet added. To get started, tap the Add Subject button below." />
 
-    <TableLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="left"
@@ -32,12 +32,12 @@
         android:visibility="gone"
         android:layout_marginRight="2dp">
 
-     <TableRow
-         android:gravity="center_vertical">
         <LinearLayout
             android:orientation="vertical"
             android:layout_height="wrap_content"
-            android:layout_weight="3">
+            android:layout_width="wrap_content"
+            android:layout_toLeftOf="@+id/stop_button"
+            android:layout_alignParentLeft="true">
 
             <TextView
                 android:layout_width="fill_parent"
@@ -61,19 +61,20 @@
         </LinearLayout>
 
 
-            <ImageButton
-                android:layout_width="50dip"
-                android:layout_height="wrap_content"
-                android:src = "@drawable/stop"
-                android:id="@+id/stop_button"
-                android:layout_weight="1"
-                android:onClick="stop_pressed"
-                android:layout_marginLeft="10dp"
-                />
+        <ImageButton
+            android:layout_width="80dip"
+            android:layout_height="wrap_content"
+            android:src = "@drawable/stop"
+            android:id="@+id/stop_button"
+            android:layout_weight="1"
+            android:onClick="stop_pressed"
+            android:layout_marginLeft="10dp"
+            android:layout_alignParentRight="true"
+            />
 
-     </TableRow>
+     </RelativeLayout>
 
-    </TableLayout>
+
 
     <ListView
         android:layout_width="match_parent"
